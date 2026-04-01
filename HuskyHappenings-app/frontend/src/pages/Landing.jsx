@@ -1,7 +1,7 @@
 export default function Landing() {
   return (
     <div>
-      <h1>Landing</h1>
+      <h2>Landing</h2>
     </div>
   );
 }

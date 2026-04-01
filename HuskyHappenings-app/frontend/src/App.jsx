@@ -15,12 +15,17 @@ function App() {
   return (
     <>
       <nav>
-        <Link to="/signup">Sign Up</Link>
+        <Link to="/">Home</Link>|
+        <Link to="/signup">Sign Up</Link>|
+        <Link to="/login">Log In</Link>|
+        <Link to="/profile">Profile</Link>|
+        <Link to="/settings">Settings</Link>|
+        <Link to="/messages">Messages</Link>
+
       </nav>
 
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/home" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
