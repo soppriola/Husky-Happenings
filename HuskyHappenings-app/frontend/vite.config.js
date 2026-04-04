@@ -1,7 +1,19 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import fs from "fs"
+import path from 'path';
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-})
+export default ({ mode }) => {
+  const envDir = path.resolve(__dirname, '../../');
+  const env = loadEnv(mode, envDir, 'VITE_');
+  return defineConfig({
+    plugins: [react()],
+    server: {
+      https: {
+        key: fs.readFileSync(env.VITE_BACKEND_KEY_PATH),
+        cert: fs.readFileSync(env.VITE_BACKEND_CERT_PATH),
+      },
+      port: 5173,
+    },
+  });
+};

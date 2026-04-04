@@ -1,39 +1,65 @@
-import './App.css'
-import { useState } from 'react'
-import { Link, Routes, Route } from "react-router-dom";
+import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import { useAuth } from "./context/AuthContext.jsx";
 
-import Landing from "./pages/Landing.jsx"
-import Home from "./pages/Home.jsx"
-import Signup from "./pages/Signup.jsx"
-import Login from "./pages/Login.jsx"
-import Profile from "./pages/Profile.jsx"
-import Settings from "./pages/Settings.jsx"
-import Messages from "./pages/Messages.jsx"
-// import ProtectedRoute from "./components/ProtectedRoute.jsx"
+import Sidebar from "./components/Sidebar.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+
+import Landing from "./pages/Landing.jsx";
+import Home from "./pages/Home.jsx";
+import Signup from "./pages/Signup.jsx";
+import Login from "./pages/Login.jsx";
+import Profile from "./pages/Profile.jsx";
+import Settings from "./pages/Settings.jsx";
+import Messages from "./pages/Messages.jsx";
 
 function App() {
+  const { loading, isAuthenticated } = useAuth();
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
   return (
-    <>
-      <nav>
-        <Link to="/">Home</Link>|
-        <Link to="/signup">Sign Up</Link>|
-        <Link to="/login">Log In</Link>|
-        <Link to="/profile">Profile</Link>|
-        <Link to="/settings">Settings</Link>|
-        <Link to="/messages">Messages</Link>
+    <div className="app-layout">
+      <Sidebar />
 
-      </nav>
-
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/messages" element={<Messages />} />
-      </Routes>
-    </>
+      <main className="main-content">
+        <Routes>
+          <Route
+            path="/"
+            element={isAuthenticated ? <Home /> : <Landing />}
+          />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </main>
+    </div>
   );
 }
 
-export default App
+export default App;
