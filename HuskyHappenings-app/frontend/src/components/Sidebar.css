@@ -1,0 +1,30 @@
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-right: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.sidebar-title {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-nav a {
+  text-decoration: none;
+  color: black;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.sidebar-nav a:hover {
+  background-color: #ddd;
+}
