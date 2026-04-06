@@ -14,6 +14,11 @@ export default function Sidebar() {
         <Link to="/profile">Profile</Link>
         <Link to="/settings">Settings</Link>
         <Link to="/messages">Messages</Link>
+
+        {/* ARIANNA FEATURES */}
+        <Link to="/events">Events</Link>
+        <Link to="/jobs">Job Board</Link>
+        <Link to="/mentorship">Mentorship</Link>
       </nav>
     </aside>
   );
