@@ -7,3 +7,26 @@
   flex: 1;
   padding: 20px;
 }
+
+/* ========================= */
+/* Arianna Styles            */
+/* ========================= */
+
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.tab-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.feature-form input,
+.feature-form textarea,
+.feature-form select {
+  padding: 10px;
+  border-radius: 8px;
+}
