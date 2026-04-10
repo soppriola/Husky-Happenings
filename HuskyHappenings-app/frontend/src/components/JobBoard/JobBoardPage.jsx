@@ -23,7 +23,11 @@ export default function JobBoardPage() {
 
   async function loadJobs() {
     const data = await fetchJobs();
-    setJobs(data);
+    if (Array.isArray(data)) {
+      setJobs(data);
+    } else {
+      setJobs([]);
+    }
   }
 
   function handleChange(event) {
@@ -33,6 +37,8 @@ export default function JobBoardPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setMessage("");
+
     const result = await createJob(formData);
 
     if (result.error) {
@@ -51,23 +57,36 @@ export default function JobBoardPage() {
       applicationURL: "",
       deadline: "",
     });
+
     loadJobs();
   }
 
   return (
-    <div>
-      <h2>Job Board</h2>
-      <p>Post and view jobs or internships.</p>
+    <div className="jobs-page">
+      <div className="jobs-header">
+        <h1>Job Board</h1>
+        <p>Post and view jobs or internships.</p>
+      </div>
 
-      <CreateJobForm
-        formData={formData}
-        onChange={handleChange}
-        onSubmit={handleSubmit}
-      />
+      <section className="jobs-section">
+        <h2>Create Job Posting</h2>
+        <CreateJobForm
+          formData={formData}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+        />
+        {message && <p className="jobs-message">{message}</p>}
+      </section>
 
-      {message && <p className="message">{message}</p>}
-
-      <JobList jobs={jobs} />
+      <section className="jobs-section">
+        <div className="jobs-list-header">
+          <h2>Available Jobs</h2>
+          <button type="button" onClick={loadJobs} className="refresh-button">
+            Refresh
+          </button>
+        </div>
+        <JobList jobs={jobs} />
+      </section>
     </div>
   );
 }
