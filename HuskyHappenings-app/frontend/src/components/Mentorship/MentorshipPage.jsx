@@ -32,10 +32,17 @@ export default function MentorshipPage() {
   }, []);
 
   async function loadData() {
-    const mentorshipData = await fetchMentorships();
-    const requestData = await fetchMentorRequests();
-    setMentorships(mentorshipData);
-    setRequests(requestData);
+    try {
+      const mentorshipData = await fetchMentorships();
+      const requestData = await fetchMentorRequests();
+
+      setMentorships(Array.isArray(mentorshipData) ? mentorshipData : []);
+      setRequests(Array.isArray(requestData) ? requestData : []);
+    } catch (error) {
+      console.error("Failed to load mentorship data:", error);
+      setMentorships([]);
+      setRequests([]);
+    }
   }
 
   function handleProgramChange(event) {
@@ -50,6 +57,8 @@ export default function MentorshipPage() {
 
   async function submitProgram(event) {
     event.preventDefault();
+    setMessage("");
+
     const result = await createMentorship(programForm);
 
     if (result.error) {
@@ -65,11 +74,14 @@ export default function MentorshipPage() {
       description: "",
       meetingStyle: "Virtual",
     });
+
     loadData();
   }
 
   async function submitRequest(event) {
     event.preventDefault();
+    setMessage("");
+
     const result = await createMentorRequest(requestForm);
 
     if (result.error) {
@@ -83,60 +95,92 @@ export default function MentorshipPage() {
       interestArea: "",
       goal: "",
     });
+
     loadData();
   }
 
   return (
-    <div>
-      <h2>Mentorship Program</h2>
-      <p>Create mentorship opportunities and allow students to request mentorship.</p>
+    <div className="mentorship-page">
+      <div className="mentorship-header">
+        <h1>Mentorship Program</h1>
+        <p>Create mentorship opportunities and allow students to request support.</p>
+      </div>
 
-      <section className="split-section">
-        <div>
-          <h3>Create Mentorship Program</h3>
-          <CreateMentorship
-            formData={programForm}
-            onChange={handleProgramChange}
-            onSubmit={submitProgram}
-          />
+      <section className="mentorship-section">
+        <div className="mentorship-split">
+          <div className="mentorship-panel">
+            <h2>Create Mentorship Program</h2>
+            <CreateMentorship
+              formData={programForm}
+              onChange={handleProgramChange}
+              onSubmit={submitProgram}
+            />
+          </div>
+
+          <div className="mentorship-panel">
+            <h2>Request a Mentor</h2>
+            <RequestMentor
+              formData={requestForm}
+              onChange={handleRequestChange}
+              onSubmit={submitRequest}
+            />
+          </div>
         </div>
 
-        <div>
-          <h3>Request a Mentor</h3>
-          <RequestMentor
-            formData={requestForm}
-            onChange={handleRequestChange}
-            onSubmit={submitRequest}
-          />
-        </div>
+        {message && <p className="mentorship-message">{message}</p>}
       </section>
 
-      {message && <p className="message">{message}</p>}
+      <section className="mentorship-section">
+        <div className="mentorship-list-header">
+          <h2>Available Mentorship Programs</h2>
+          <button type="button" onClick={loadData} className="refresh-button">
+            Refresh
+          </button>
+        </div>
 
-      <h3>Available Mentorship Programs</h3>
-      <div className="card-grid">
-        {mentorships.map((item) => (
-          <div className="feature-card" key={item.id}>
-            <h4>{item.name}</h4>
-            <p><strong>Mentor:</strong> {item.mentorName}</p>
-            <p><strong>Focus Area:</strong> {item.focusArea}</p>
-            <p><strong>Description:</strong> {item.description}</p>
-            <p><strong>Meeting Style:</strong> {item.meetingStyle}</p>
+        {mentorships.length === 0 ? (
+          <p className="empty-state">No mentorship programs available yet.</p>
+        ) : (
+          <div className="mentorship-card-grid">
+            {mentorships.map((item) => (
+              <div className="mentorship-card" key={item.id}>
+                <div className="mentorship-card-top">
+                  <h3>{item.name}</h3>
+                  <span className="mentorship-badge">{item.meetingStyle}</span>
+                </div>
+                <p><strong>Mentor:</strong> {item.mentorName}</p>
+                <p><strong>Focus Area:</strong> {item.focusArea}</p>
+                <p className="mentorship-description">
+                  {item.description || "No description provided."}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
+      </section>
 
-      <h3>Mentorship Requests</h3>
-      <div className="card-grid">
-        {requests.map((item) => (
-          <div className="feature-card" key={item.id}>
-            <h4>{item.studentName}</h4>
-            <p><strong>Interest Area:</strong> {item.interestArea}</p>
-            <p><strong>Goal:</strong> {item.goal}</p>
-            <p><strong>Status:</strong> {item.status}</p>
+      <section className="mentorship-section">
+        <h2>Mentorship Requests</h2>
+
+        {requests.length === 0 ? (
+          <p className="empty-state">No mentorship requests submitted yet.</p>
+        ) : (
+          <div className="mentorship-card-grid">
+            {requests.map((item) => (
+              <div className="mentorship-card" key={item.id}>
+                <div className="mentorship-card-top">
+                  <h3>{item.studentName}</h3>
+                  <span className="mentorship-badge">{item.status}</span>
+                </div>
+                <p><strong>Interest Area:</strong> {item.interestArea}</p>
+                <p className="mentorship-description">
+                  <strong>Goal:</strong> {item.goal}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
+      </section>
     </div>
   );
 }
