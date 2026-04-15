@@ -1,0 +1,20 @@
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.chat-header {
+  padding: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.chat-header h2 {
+  margin: 0;
+}
+
+.chat-header span {
+  font-size: 14px;
+  color: #666;
+}

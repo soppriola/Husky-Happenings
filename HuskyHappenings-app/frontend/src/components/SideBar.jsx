@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import {Link} from "react-router-dom";
+import {useAuth} from "../context/AuthContext";
 import "./Sidebar.css";
 
 export default function Sidebar() {
-  const { isAuthenticated, logout } = useAuth();
+  const {isAuthenticated, logout} = useAuth();
 
   return (
     <aside className="sidebar">

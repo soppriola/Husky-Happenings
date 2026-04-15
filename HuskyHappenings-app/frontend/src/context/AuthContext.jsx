@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {createContext, useContext, useState, useEffect} from "react";
 
 const AuthContext = createContext(null);
 
@@ -7,9 +7,9 @@ export function useAuth(){
 }
 
 // Handles authentication of users session
-export function AuthProvider({ children }) {
+export function AuthProvider({children}) {
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     async function checkSession() {
@@ -19,9 +19,14 @@ export function AuthProvider({ children }) {
           credentials: "include",
        });
 
-        setIsAuthenticated(response.ok);
+        if (!response.ok) {
+          setCurrentUser(null);
+        } else {
+          const data = await response.json();
+          setCurrentUser(data);
+        }
       } catch {
-        setIsAuthenticated(false);
+        setCurrentUser(null);
       }
       setLoading(false);
     }
@@ -30,17 +35,42 @@ export function AuthProvider({ children }) {
   },
 []);
 
-  const login = async () => {
-    setIsAuthenticated(true);
+  const login = async (userData = null) => {
+    if (userData) {
+      setCurrentUser(userData);
+      return;
+    }
+
+    try {
+      const response = await fetch("https://localhost:5000/api/me", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        setCurrentUser(null);
+      } else {
+        const data = await response.json();
+        setCurrentUser(data);
+      }
+    } catch {
+      setCurrentUser(null);
+    }
   };
 
   const logout = async () => {
-    await fetch("https://localhost:5000/api/logout", {
+    try {
+      await fetch("https://localhost:5000/api/logout", {
         method: "POST",
         credentials: "include",
-    });
-    setIsAuthenticated(false);
+      });
+    } catch {
+    } finally {
+      setCurrentUser(null);
+    }
   };
+  
+  const isAuthenticated = !!currentUser
 
-  return (<AuthContext.Provider  value={{ loading, isAuthenticated, login, logout, }}> {children} </AuthContext.Provider>);
+  return (<AuthContext.Provider  value={{ loading, currentUser, isAuthenticated, login, logout, }}> {children} </AuthContext.Provider>);
 }
