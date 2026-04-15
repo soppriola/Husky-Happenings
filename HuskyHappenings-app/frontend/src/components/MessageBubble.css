@@ -1,0 +1,17 @@
+.message-bubble {
+  max-width: 60%;
+  width: fit-content;
+  padding: 10px 14px;
+  border-radius: 12px;
+  overflow-wrap: break-word;
+}
+
+.message-bubble.message-received {
+  background: #f1f1f1;
+  margin-right: auto;
+}
+
+.message-bubble.message-sent {
+  background: #dbeafe;
+  margin-left: auto;
+}
