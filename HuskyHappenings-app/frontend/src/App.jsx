@@ -13,6 +13,11 @@ import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import Messages from "./pages/Messages.jsx";
 
+// Arianna imports
+import EventsPage from "./components/Events/EventsPage.jsx";
+import JobBoardPage from "./components/JobBoard/JobBoardPage.jsx";
+import MentorshipPage from "./components/Mentorship/MentorshipPage.jsx";
+
 function App() {
   const { loading, isAuthenticated } = useAuth();
 
@@ -32,6 +37,7 @@ function App() {
           />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+
           <Route
             path="/profile/"
             element={
@@ -40,6 +46,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/settings"
             element={
@@ -48,11 +55,40 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/messages"
             element={
               <ProtectedRoute>
                 <Messages />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Arianna routes */}
+          <Route
+            path="/events"
+            element={
+              <ProtectedRoute>
+                <EventsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/jobs"
+            element={
+              <ProtectedRoute>
+                <JobBoardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/mentorship"
+            element={
+              <ProtectedRoute>
+                <MentorshipPage />
               </ProtectedRoute>
             }
           />

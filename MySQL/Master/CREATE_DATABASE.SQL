@@ -3,3 +3,28 @@ CREATE DATABASE IF NOT EXISTS HUSKYHAPPENINGS
   DEFAULT COLLATE utf8mb4_0900_ai_ci;
 
 USE HUSKYHAPPENINGS;
+
+-- =========================
+-- DROP TABLES 
+-- =========================
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS JobApplication;
+DROP TABLE IF EXISTS JobPosting;
+DROP TABLE IF EXISTS EventRegistration;
+DROP TABLE IF EXISTS Event;
+DROP TABLE IF EXISTS GroupMember;
+DROP TABLE IF EXISTS HGroup;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- =========================
+-- BUILD ARIANNA TABLES
+-- =========================
+
+SOURCE ../Schema/HGROUP.sql;
+SOURCE ../Schema/GROUPMEMBER.sql;
+SOURCE ../Schema/EVENT.sql;
+SOURCE ../Schema/EVENTREGISTRATION.sql;
+SOURCE ../Schema/JOBPOSTING.sql;
+SOURCE ../Schema/JOBAPPLICATION.sql;
