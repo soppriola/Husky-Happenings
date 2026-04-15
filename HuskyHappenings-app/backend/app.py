@@ -281,7 +281,7 @@ def send_message(conversation_id):
 @app.get("/api/profile/<int:user_id>")
 @login_required
 def get_profile(user_id):
-    cursor.execute("SELECT USER_ID, USERNAME, EMAIL FROM USERS WHERE USER_ID = %s", (user_id,))
+    cursor.execute("SELECT USER_ID, USERNAME, EMAIL, NAME, BIO, PICTURE_URL FROM USERS WHERE USER_ID = %s", (user_id,))
     user = cursor.fetchone()
 
     if not user:
@@ -290,7 +290,10 @@ def get_profile(user_id):
     return jsonify({
         "user_id": user["USER_ID"],
         "username": user["USERNAME"],
-        "email": user["EMAIL"]
+        "email": user["EMAIL"],
+        "name": user["NAME"],
+        "bio": user["BIO"],
+        "picture_url": user["PICTURE_URL"]
     }), 200
 
 @app.post("/api/profile/edit/")
