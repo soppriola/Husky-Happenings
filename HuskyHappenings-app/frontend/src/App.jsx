@@ -19,7 +19,7 @@ import JobBoardPage from "./components/JobBoard/JobBoardPage.jsx";
 import MentorshipPage from "./components/Mentorship/MentorshipPage.jsx";
 
 function App() {
-  const { loading, isAuthenticated } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return <p>Loading...</p>;
@@ -31,12 +31,18 @@ function App() {
 
       <main className="main-content">
         <Routes>
-          <Route
-            path="/"
-            element={isAuthenticated ? <Home /> : <Landing />}
-          />
+          <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+
+          <Route
+            path="/landing"
+            element={
+              <ProtectedRoute>
+                <Landing />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/profile/"
@@ -65,7 +71,6 @@ function App() {
             }
           />
 
-          {/* Arianna routes */}
           <Route
             path="/events"
             element={
