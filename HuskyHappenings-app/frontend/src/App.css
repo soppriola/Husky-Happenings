@@ -406,4 +406,35 @@
     gap: 12px;
   }
 }
+.job-apply-form {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.job-apply-textarea,
+.job-apply-input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.job-apply-textarea::placeholder,
+.job-apply-input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.job-apply-textarea:focus,
+.job-apply-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.28);
+}
 
