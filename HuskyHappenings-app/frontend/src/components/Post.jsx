@@ -1,4 +1,31 @@
-export default function Post({ author, content, time }) {
+import { useState } from "react";
+
+export default function Post({ postId, author, content, time, likeCount, onRefresh }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleLike = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`https://localhost:5000/api/posts/${postId}/like`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error(data.error || "Failed to like post");
+      } else {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -21,8 +48,11 @@ export default function Post({ author, content, time }) {
         {content}
       </p>
 
-      <div style={{ display: "flex", gap: "16px", marginTop: "12px" }}>
-        <button>Like</button>
+      <div style={{ display: "flex", gap: "16px", marginTop: "12px", alignItems: "center" }}>
+        <button onClick={handleLike} disabled={loading}>
+          {loading ? "Liking..." : "Like"}
+        </button>
+        <span>{likeCount} likes</span>
         <button>Comment</button>
         <button>Share</button>
       </div>

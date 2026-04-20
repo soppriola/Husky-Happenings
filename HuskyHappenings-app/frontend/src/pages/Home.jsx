@@ -1,5 +1,3 @@
-import Feed from "../components/Feed";
-
 export default function Home() {
   return (
     <div
@@ -13,7 +11,9 @@ export default function Home() {
         Husky Happenings
       </h1>
 
-      <Feed />
+      <p style={{ textAlign: "center", fontSize: "18px" }}>
+        Welcome to Husky Happenings.
+      </p>
     </div>
   );
 }

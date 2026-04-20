@@ -12,6 +12,7 @@ import Login from "./pages/Login.jsx";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import Messages from "./pages/Messages.jsx";
+import CreatePostPage from "./pages/CreatePostPage.jsx";
 
 // Arianna imports
 import EventsPage from "./components/Events/EventsPage.jsx";
@@ -33,13 +34,31 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={isAuthenticated ? <Home /> : <Landing />}
+            element={isAuthenticated ? <Landing /> : <Home />}
           />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
 
           <Route
-            path="/profile"
+            path="/landing"
+            element={
+              <ProtectedRoute>
+                <Landing />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/create-post"
+            element={
+              <ProtectedRoute>
+                <CreatePostPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile/"
             element={
               <ProtectedRoute>
                 <Profile />
@@ -65,7 +84,6 @@ function App() {
             }
           />
 
-          {/* Arianna routes */}
           <Route
             path="/events"
             element={
