@@ -30,3 +30,380 @@
   padding: 10px;
   border-radius: 8px;
 }
+
+.events-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.events-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.events-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.events-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.event-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.event-form-grid input,
+.event-form-grid textarea,
+.event-form-grid select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #666;
+  background: #2f2f2f;
+  color: white;
+}
+
+.event-form-grid label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.event-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.event-button-wrap {
+  display: flex;
+  align-items: end;
+}
+
+.primary-button,
+.refresh-button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.primary-button {
+  width: 100%;
+}
+
+.events-message {
+  margin-top: 12px;
+  color: #7CFC98;
+  font-weight: 600;
+}
+
+.event-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.event-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.event-card-top h3 {
+  margin: 0;
+}
+
+.event-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #444;
+  font-size: 0.85rem;
+}
+
+.event-description {
+  margin-bottom: 14px;
+  color: #d0d0d0;
+}
+
+.event-meta p {
+  margin: 6px 0;
+}
+
+.empty-state {
+  color: #cfcfcf;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .event-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .events-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+} 
+
+.jobs-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.jobs-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.jobs-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.jobs-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.job-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.job-form-grid input,
+.job-form-grid textarea,
+.job-form-grid select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #666;
+  background: #2f2f2f;
+  color: white;
+}
+
+.job-form-grid label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.job-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.job-button-wrap {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.jobs-message {
+  margin-top: 12px;
+  color: #7CFC98;
+  font-weight: 600;
+}
+
+.job-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.job-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.job-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.job-card-top h3 {
+  margin: 0 0 4px 0;
+}
+
+.job-company {
+  margin: 0;
+  color: #cfcfcf;
+}
+
+.job-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #444;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.job-description {
+  margin-bottom: 14px;
+  color: #d0d0d0;
+}
+
+.job-meta p {
+  margin: 6px 0;
+}
+
+@media (max-width: 768px) {
+  .job-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .jobs-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+ .mentorship-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.mentorship-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.mentorship-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.mentorship-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.mentorship-panel h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.mentorship-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mentorship-form-grid input,
+.mentorship-form-grid textarea,
+.mentorship-form-grid select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #666;
+  background: #2f2f2f;
+  color: white;
+}
+
+.mentorship-form-grid label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.mentorship-message {
+  margin-top: 16px;
+  color: #7CFC98;
+  font-weight: 600;
+}
+
+.mentorship-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.mentorship-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.mentorship-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mentorship-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mentorship-card-top h3 {
+  margin: 0;
+}
+
+.mentorship-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #444;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.mentorship-description {
+  color: #d0d0d0;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .mentorship-split {
+    grid-template-columns: 1fr;
+  }
+
+  .mentorship-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
