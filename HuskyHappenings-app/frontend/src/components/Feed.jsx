@@ -9,7 +9,7 @@ export default function Feed() {
   useEffect(() => {
     async function loadPosts() {
       try {
-        const response = await fetch("http://localhost:5000/api/posts", {
+        const response = await fetch("https://localhost:5000/api/posts", {
           credentials: "include",
         });
 
