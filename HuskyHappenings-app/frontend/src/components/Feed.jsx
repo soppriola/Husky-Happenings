@@ -1,7 +1,9 @@
+import { useState } from "react";
 import Post from "./Post";
+import CreatePost from "./CreatePost";
 
 export default function Feed() {
-  const samplePosts = [
+  const [posts, setPosts] = useState([
     {
       id: 1,
       author: "John Smith",
@@ -20,7 +22,18 @@ export default function Feed() {
       content: "Reminder: career fair is happening this Friday in the student center.",
       time: "1 day ago",
     },
-  ];
+  ]);
+
+  const handleAddPost = (newContent) => {
+    const newPost = {
+      id: Date.now(),
+      author: "You",
+      content: newContent,
+      time: "Just now",
+    };
+
+    setPosts([newPost, ...posts]);
+  };
 
   return (
     <div
@@ -32,7 +45,9 @@ export default function Feed() {
     >
       <h2 style={{ marginBottom: "20px" }}>News Feed</h2>
 
-      {samplePosts.map((post) => (
+      <CreatePost onAddPost={handleAddPost} />
+
+      {posts.map((post) => (
         <Post
           key={post.id}
           author={post.author}
