@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function CreateMentorship({ formData, onChange, onSubmit }) {
+export default function CreateMentorship({ formData, onChange, onSubmit, isEditing }) {
   return (
     <form className="mentorship-form-grid" onSubmit={onSubmit}>
       <input
@@ -11,15 +11,8 @@ export default function CreateMentorship({ formData, onChange, onSubmit }) {
       />
 
       <input
-        name="mentorName"
-        placeholder="Mentor name"
-        value={formData.mentorName}
-        onChange={onChange}
-      />
-
-      <input
         name="focusArea"
-        placeholder="Focus area"
+        placeholder="Focus area / study category"
         value={formData.focusArea}
         onChange={onChange}
       />
@@ -33,20 +26,19 @@ export default function CreateMentorship({ formData, onChange, onSubmit }) {
       />
 
       <div>
-        <label>Meeting Style</label>
+        <label>Privacy Type</label>
         <select
-          name="meetingStyle"
-          value={formData.meetingStyle}
+          name="privacyType"
+          value={formData.privacyType}
           onChange={onChange}
         >
-          <option value="Virtual">Virtual</option>
-          <option value="In Person">In Person</option>
-          <option value="Hybrid">Hybrid</option>
+          <option value="Public">Public</option>
+          <option value="Private">Private</option>
         </select>
       </div>
 
       <button type="submit" className="primary-button">
-        Create Program
+        {isEditing ? "Update Program" : "Create Program"}
       </button>
     </form>
   );
