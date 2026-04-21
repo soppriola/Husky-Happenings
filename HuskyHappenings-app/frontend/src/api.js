@@ -19,6 +19,31 @@ export async function createEvent(eventData) {
   return handleResponse(response);
 }
 
+export async function deleteEvent() {
+  const response = "";
+  return handleResponse(response);
+}
+
+export async function updateEvent() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function registerForEvent() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function updateEventRegistration() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function cancelEvent() {
+  const response = "";
+ return handleResponse(response);
+}
+
 export async function fetchJobs() {
   const response = await fetch(`${API_BASE}/jobs`);
   return handleResponse(response);
@@ -31,6 +56,31 @@ export async function createJob(jobData) {
     body: JSON.stringify(jobData),
   });
   return handleResponse(response);
+}
+
+export async function deleteJob() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function updateJob() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function applyToJob() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function updateJobApplicationStatus() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function closeJob() {
+  const response = "";
+ return handleResponse(response);
 }
 
 export async function fetchMentorships() {
@@ -47,6 +97,21 @@ export async function createMentorship(mentorshipData) {
   return handleResponse(response);
 }
 
+export async function deleteMentorship() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function updateMentorship() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function deactivateMentorship() {
+  const response = "";
+ return handleResponse(response);
+}
+
 export async function fetchMentorRequests() {
   const response = await fetch(`${API_BASE}/mentorship-requests`);
   return handleResponse(response);
@@ -59,4 +124,14 @@ export async function createMentorRequest(requestData) {
     body: JSON.stringify(requestData),
   });
   return handleResponse(response);
+}
+
+export async function deleteMentorRequest() {
+  const response = "";
+ return handleResponse(response);
+}
+
+export async function updateMentorRequest() {
+  const response = "";
+ return handleResponse(response);
 }
