@@ -3,6 +3,7 @@ import "./Messages.css";
 import ConversationList from "../components/ConversationList.jsx";
 import ChatPanel from "../components/ChatPanel.jsx";
 import {useAuth} from "../context/AuthContext.jsx";
+import { connectWebSocket, disconnectWebSocket } from "../websocket.js";
 
 export default function Messages() {
   const {currentUser} = useAuth();
@@ -11,6 +12,16 @@ export default function Messages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Connect to WebSocket when component mounts
+    connectWebSocket();
+
+    return () => {
+      // Optional: disconnect when component unmounts
+      // disconnectWebSocket();
+    };
+  }, []);
 
   useEffect(() => {
     async function loadConversations() {

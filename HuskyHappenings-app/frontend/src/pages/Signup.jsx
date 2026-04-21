@@ -3,6 +3,7 @@
 // of a new user account for MainePad Finder
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
+import DatePicker from "react-datepicker";
 
 export default function SignUp() {
   const [username, setUsername] = useState("");
@@ -142,7 +143,7 @@ export default function SignUp() {
 
         <div>
           <label>Birth Date:</label>
-          <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
+          <DatePicker selected={birthDate ? new Date(birthDate) : null} onChange={(date) => setBirthDate(date ? date.toISOString().split("T")[0] : "")} dateFormat="MM-dd-yyyy" />
         </div>
 
         {userType === "Student" && (

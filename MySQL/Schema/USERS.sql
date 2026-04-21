@@ -9,5 +9,5 @@ CREATE TABLE IF NOT EXISTS USERS (
     PICTURE_URL NVARCHAR(1000),
     BIRTH_DATE DATE NOT NULL,
     DATE_JOINED DATE NOT NULL DEFAULT (CURRENT_DATE),
-    ROLE ENUM('Student', 'Admin', 'Faculty', 'Alumni') NOT NULL
+    USER_TYPE ENUM('Student', 'Admin', 'Faculty', 'Alumni') NOT NULL
 );

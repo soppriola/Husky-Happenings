@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 import mysql.connector
 import secrets
@@ -12,6 +13,7 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["https://localhost:5173"])  # allows frontend to communicate with backend
+socketio = SocketIO(app, cors_allowed_origins="https://localhost:5173")
 
 
 # Connects the backend to the MySQL database
@@ -312,29 +314,109 @@ def send_message(conversation_id):
         (conversation_id, g.user_id, body)
     )
     db.commit()
+    
+    # Emit the message to all users in the conversation room
+    cursor.execute("SELECT MESSAGE_ID FROM MESSAGE WHERE CONVERSATION_ID = %s AND SENDER_ID = %s ORDER BY TIMESTAMP DESC LIMIT 1", (conversation_id, g.user_id))
+    message_record = cursor.fetchone()
+    
+    message_data = {
+        "message_id": message_record["MESSAGE_ID"],
+        "sender_id": g.user_id,
+        "body": body,
+        "sent_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    socketio.emit('receive_message', message_data, room=conversation_id)
+    
     return jsonify({"message": "Message sent"}), 201
+
+
+@socketio.on('join_conversation')
+def handle_join_conversation(data):
+    conversation_id = data.get('conversation_id')
+    join_room(conversation_id)
+
+@socketio.on('leave_conversation')
+def handle_leave_conversation(data):
+    conversation_id = data.get('conversation_id')
+    leave_room(conversation_id)
+
+@socketio.on('send_message')
+def handle_send_message(data):
+    conversation_id = data.get('conversation_id')
+    body = data.get('body')
+    user_id = data.get('user_id')
+    
+    if not body or not conversation_id:
+        return False
+    
+    # Check if user is a member of the conversation
+    cursor.execute("SELECT 1 FROM CONVERSATION_MEMBERS WHERE CONVERSATION_ID = %s AND USER_ID = %s", (conversation_id, user_id))
+    if not cursor.fetchone():
+        return False
+    
+    cursor.execute("INSERT INTO MESSAGE (CONVERSATION_ID, SENDER_ID, CONTENT) VALUES (%s, %s, %s)", (conversation_id, user_id, body))
+    db.commit()
+    
+    # Emit the message to all users in the conversation room
+    cursor.execute("SELECT MESSAGE_ID FROM MESSAGE WHERE CONVERSATION_ID = %s AND SENDER_ID = %s ORDER BY TIMESTAMP DESC LIMIT 1", (conversation_id, user_id))
+    message_record = cursor.fetchone()
+    
+    message_data = {
+        "message_id": message_record["MESSAGE_ID"],
+        "sender_id": user_id,
+        "body": body,
+        "sent_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    socketio.emit('receive_message', message_data, room=conversation_id)
+    return True
 
 
 @app.get("/api/profile/<int:user_id>")
 @login_required
 def get_profile(user_id):
-    cursor.execute(
-        "SELECT USER_ID, USERNAME, EMAIL, NAME, BIO, PICTURE_URL FROM USERS WHERE USER_ID = %s",
-        (user_id,)
-    )
+    cursor.execute("SELECT USER_ID, USERNAME, EMAIL, NAME, BIO, PICTURE_URL, PHONE_NUMBER, BIRTH_DATE, USER_TYPE FROM USERS WHERE USER_ID = %s", (user_id,))
     user = cursor.fetchone()
 
     if not user:
         return jsonify({"error": "User not found."}), 404
 
-    return jsonify({
+    response = {
         "user_id": user["USER_ID"],
         "username": user["USERNAME"],
         "email": user["EMAIL"],
         "name": user["NAME"],
         "bio": user["BIO"],
-        "picture_url": user["PICTURE_URL"]
-    }), 200
+        "picture_url": user["PICTURE_URL"],
+        "phone_number": user["PHONE_NUMBER"],
+        "birth_date": user["BIRTH_DATE"],
+        "user_type": user["USER_TYPE"]
+    }
+
+    # Fetch role-specific data
+    user_type = user["USER_TYPE"]
+    if user_type == "Student":
+        cursor.execute("SELECT MAJOR, GRADUATION_YEAR FROM STUDENTS WHERE USER_ID = %s", (user_id,))
+        student = cursor.fetchone()
+        if student:
+            response["major"] = student["MAJOR"]
+            response["graduation_year"] = student["GRADUATION_YEAR"]
+    elif user_type == "Faculty":
+        cursor.execute("SELECT DEPARTMENT, OFFICE_LOCATION FROM FACULTY WHERE USER_ID = %s", (user_id,))
+        faculty = cursor.fetchone()
+        if faculty:
+            response["department"] = faculty["DEPARTMENT"]
+            response["office_location"] = faculty["OFFICE_LOCATION"]
+    elif user_type == "Alumni":
+        cursor.execute("SELECT GRADUATION_YEAR, DEGREE_EARNED, CURRENT_EMPLOYER FROM ALUMNI WHERE USER_ID = %s", (user_id,))
+        alumni = cursor.fetchone()
+        if alumni:
+            response["graduation_year"] = alumni["GRADUATION_YEAR"]
+            response["degree_earned"] = alumni["DEGREE_EARNED"]
+            response["current_employer"] = alumni["CURRENT_EMPLOYER"]
+
+    return jsonify(response), 200
 
 
 @app.post("/api/profile/edit/")
@@ -1011,9 +1093,11 @@ def health_check():
     return jsonify({"message": "Backend is running"}), 200
 
 if __name__ == "__main__":
-    app.run(
+    socketio.run(
+        app,
         host='localhost',
         port=5000,
         ssl_context=(os.getenv('FRONTEND_CERT_PATH'), os.getenv('FRONTEND_KEY_PATH')),
         debug=True
     )
+    
