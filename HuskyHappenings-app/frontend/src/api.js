@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:5000/api";
+const API_BASE = "https://localhost:5000/api";
 
 async function handleResponse(response) {
   const data = await response.json();
@@ -6,14 +6,14 @@ async function handleResponse(response) {
 }
 
 export async function fetchEvents() {
-  const response = await fetch("http://127.0.0.1:5000/api/events", {
+  const response = await fetch("https://localhost:5000/api/events", {
     credentials: "include",
   });
   return response.json();
 }
 
 export async function createEvent(formData) {
-  const response = await fetch("http://127.0.0.1:5000/api/events", {
+  const response = await fetch("https://localhost:5000/api/events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -23,7 +23,7 @@ export async function createEvent(formData) {
 }
 
 export async function updateEvent(id, formData) {
-  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}`, {
+  const response = await fetch(`https://localhost:5000/api/events/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +33,7 @@ export async function updateEvent(id, formData) {
 }
 
 export async function cancelEvent(id, cancellationReason) {
-  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}/cancel`, {
+  const response = await fetch(`https://localhost:5000/api/events/${id}/cancel`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -43,7 +43,7 @@ export async function cancelEvent(id, cancellationReason) {
 }
 
 export async function deleteEvent(id) {
-  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}`, {
+  const response = await fetch(`https://localhost:5000/api/events/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -51,7 +51,7 @@ export async function deleteEvent(id) {
 }
 
 export async function registerForEvent(id, rsvpStatus) {
-  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}/register`, {
+  const response = await fetch(`https://localhost:5000/api/events/${id}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -61,7 +61,7 @@ export async function registerForEvent(id, rsvpStatus) {
 }
 
 export async function updateEventRegistration(id, rsvpStatus, registrationStatus = "Responded") {
-  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}/register`, {
+  const response = await fetch(`https://localhost:5000/api/events/${id}/register`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -71,14 +71,14 @@ export async function updateEventRegistration(id, rsvpStatus, registrationStatus
 }
 
 export async function fetchJobs() {
-  const response = await fetch("http://127.0.0.1:5000/api/jobs", {
+  const response = await fetch("https://localhost:5000/api/jobs", {
     credentials: "include",
   });
   return response.json();
 }
 
 export async function createJob(formData) {
-  const response = await fetch("http://127.0.0.1:5000/api/jobs", {
+  const response = await fetch("https://localhost:5000/api/jobs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -88,7 +88,7 @@ export async function createJob(formData) {
 }
 
 export async function updateJob(id, formData) {
-  const response = await fetch(`http://127.0.0.1:5000/api/jobs/${id}`, {
+  const response = await fetch(`https://localhost:5000/api/jobs/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -98,7 +98,7 @@ export async function updateJob(id, formData) {
 }
 
 export async function closeJob(id) {
-  const response = await fetch(`http://127.0.0.1:5000/api/jobs/${id}/close`, {
+  const response = await fetch(`https://localhost:5000/api/jobs/${id}/close`, {
     method: "PUT",
     credentials: "include",
   });
@@ -106,7 +106,7 @@ export async function closeJob(id) {
 }
 
 export async function deleteJob(id) {
-  const response = await fetch(`http://127.0.0.1:5000/api/jobs/${id}`, {
+  const response = await fetch(`https://localhost:5000/api/jobs/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -114,7 +114,7 @@ export async function deleteJob(id) {
 }
 
 export async function applyToJob(id, coverLetter, resumeURL) {
-  const response = await fetch(`http://127.0.0.1:5000/api/jobs/${id}/apply`, {
+  const response = await fetch(`https://localhost:5000/api/jobs/${id}/apply`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -124,7 +124,7 @@ export async function applyToJob(id, coverLetter, resumeURL) {
 }
 
 export async function updateJobApplicationStatus(applicationId, applicationStatus) {
-  const response = await fetch(`http://127.0.0.1:5000/api/job-applications/${applicationId}`, {
+  const response = await fetch(`https://localhost:5000/api/job-applications/${applicationId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -134,14 +134,14 @@ export async function updateJobApplicationStatus(applicationId, applicationStatu
 }
 
 export async function fetchMentorships() {
-  const response = await fetch("http://127.0.0.1:5000/api/mentorships", {
+  const response = await fetch("https://localhost:5000/api/mentorships", {
     credentials: "include",
   });
   return response.json();
 }
 
 export async function createMentorship(formData) {
-  const response = await fetch("http://127.0.0.1:5000/api/mentorships", {
+  const response = await fetch("https://localhost:5000/api/mentorships", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -151,7 +151,7 @@ export async function createMentorship(formData) {
 }
 
 export async function updateMentorship(id, formData) {
-  const response = await fetch(`http://127.0.0.1:5000/api/mentorships/${id}`, {
+  const response = await fetch(`https://localhost:5000/api/mentorships/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -161,7 +161,7 @@ export async function updateMentorship(id, formData) {
 }
 
 export async function deactivateMentorship(id) {
-  const response = await fetch(`http://127.0.0.1:5000/api/mentorships/${id}/deactivate`, {
+  const response = await fetch(`https://localhost:5000/api/mentorships/${id}/deactivate`, {
     method: "PUT",
     credentials: "include",
   });
@@ -169,7 +169,7 @@ export async function deactivateMentorship(id) {
 }
 
 export async function deleteMentorship(id) {
-  const response = await fetch(`http://127.0.0.1:5000/api/mentorships/${id}`, {
+  const response = await fetch(`https://localhost:5000/api/mentorships/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -177,14 +177,14 @@ export async function deleteMentorship(id) {
 }
 
 export async function fetchMentorRequests() {
-  const response = await fetch("http://127.0.0.1:5000/api/mentorship-requests", {
+  const response = await fetch("https://localhost:5000/api/mentorship-requests", {
     credentials: "include",
   });
   return response.json();
 }
 
 export async function createMentorRequest(formData) {
-  const response = await fetch("http://127.0.0.1:5000/api/mentorship-requests", {
+  const response = await fetch("https://localhost:5000/api/mentorship-requests", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -194,7 +194,7 @@ export async function createMentorRequest(formData) {
 }
 
 export async function updateMentorRequest(formData) {
-  const response = await fetch("http://127.0.0.1:5000/api/mentorship-requests", {
+  const response = await fetch("https://localhost:5000/api/mentorship-requests", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -204,7 +204,7 @@ export async function updateMentorRequest(formData) {
 }
 
 export async function deleteMentorRequest(formData) {
-  const response = await fetch("http://127.0.0.1:5000/api/mentorship-requests", {
+  const response = await fetch("https://localhost:5000/api/mentorship-requests", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
