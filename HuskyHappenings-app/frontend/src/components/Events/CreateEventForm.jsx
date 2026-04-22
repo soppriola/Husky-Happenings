@@ -32,6 +32,7 @@ export default function CreateEventForm({ formData, onChange, onSubmit }) {
             type="datetime-local"
             name="startDateTime"
             value={formData.startDateTime}
+            min={new Date().toISOString().slice(0,16)}
             onChange={onChange}
           />
         </div>
@@ -42,6 +43,7 @@ export default function CreateEventForm({ formData, onChange, onSubmit }) {
             type="datetime-local"
             name="endDateTime"
             value={formData.endDateTime}
+            min={new Date().toISOString().slice(0,16)} 
             onChange={onChange}
           />
         </div>
