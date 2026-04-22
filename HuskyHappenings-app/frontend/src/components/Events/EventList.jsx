@@ -25,6 +25,7 @@ function formatDateTime(value) {
 
 export default function EventList({
   events,
+  currentUserId,
   onEdit,
   onCancel,
   onDelete,
@@ -58,17 +59,13 @@ export default function EventList({
             )}
           </div>
 
+          {String(event.createdBy) === String(currentUserId) && (
           <div className="event-action-row">
-            <button type="button" onClick={() => onEdit(event)}>
-              Edit
-            </button>
-            <button type="button" onClick={() => onCancel(event.id)}>
-              Cancel
-            </button>
-            <button type="button" onClick={() => onDelete(event.id)}>
-              Delete
-            </button>
+              <button type="button" onClick={() => onEdit(event)}>Edit</button>
+              <button type="button" onClick={() => onCancel(event.id)}>Cancel</button>
+              <button type="button" onClick={() => onDelete(event.id)}>Delete</button>
           </div>
+)}
 
           <div className="event-action-row">
             <button type="button" onClick={() => onRegister(event.id, "Going")}>
