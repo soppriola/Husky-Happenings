@@ -37,10 +37,19 @@ export default function EventsPage() {
   const [message, setMessage] = useState("");
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     loadEvents();
   }, []);
+
+  useEffect(() => {
+  fetch("http://127.0.0.1:5000/api/me", {
+    credentials: "include",
+  })
+    .then(res => res.json())
+    .then(data => setCurrentUserId(data.user_id));
+}, []);
 
   async function loadEvents() {
     const data = await fetchEvents();
@@ -166,6 +175,7 @@ export default function EventsPage() {
         </div>
         <EventList
           events={events}
+          currentUserId={currentUserId}
           onEdit={handleEdit}
           onCancel={handleCancelEvent}
           onDelete={handleDeleteEvent}
