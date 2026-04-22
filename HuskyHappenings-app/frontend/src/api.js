@@ -6,132 +6,209 @@ async function handleResponse(response) {
 }
 
 export async function fetchEvents() {
-  const response = await fetch(`${API_BASE}/events`);
-  return handleResponse(response);
+  const response = await fetch("http://127.0.0.1:5000/api/events", {
+    credentials: "include",
+  });
+  return response.json();
 }
 
-export async function createEvent(eventData) {
-  const response = await fetch(`${API_BASE}/events`, {
+export async function createEvent(formData) {
+  const response = await fetch("http://127.0.0.1:5000/api/events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(eventData),
+    credentials: "include",
+    body: JSON.stringify(formData),
   });
-  return handleResponse(response);
+  return response.json();
 }
 
-export async function deleteEvent() {
-  const response = "";
-  return handleResponse(response);
+export async function updateEvent(id, formData) {
+  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(formData),
+  });
+  return response.json();
 }
 
-export async function updateEvent() {
-  const response = "";
- return handleResponse(response);
+export async function cancelEvent(id, cancellationReason) {
+  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}/cancel`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ cancellationReason }),
+  });
+  return response.json();
 }
 
-export async function registerForEvent() {
-  const response = "";
- return handleResponse(response);
+export async function deleteEvent(id) {
+  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return response.json();
 }
 
-export async function updateEventRegistration() {
-  const response = "";
- return handleResponse(response);
+export async function registerForEvent(id, rsvpStatus) {
+  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ rsvpStatus }),
+  });
+  return response.json();
 }
 
-export async function cancelEvent() {
-  const response = "";
- return handleResponse(response);
+export async function updateEventRegistration(id, rsvpStatus, registrationStatus = "Responded") {
+  const response = await fetch(`http://127.0.0.1:5000/api/events/${id}/register`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ rsvpStatus, registrationStatus }),
+  });
+  return response.json();
 }
 
 export async function fetchJobs() {
-  const response = await fetch(`${API_BASE}/jobs`);
-  return handleResponse(response);
+  const response = await fetch("http://127.0.0.1:5000/api/jobs", {
+    credentials: "include",
+  });
+  return response.json();
 }
 
-export async function createJob(jobData) {
-  const response = await fetch(`${API_BASE}/jobs`, {
+export async function createJob(formData) {
+  const response = await fetch("http://127.0.0.1:5000/api/jobs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(jobData),
+    credentials: "include",
+    body: JSON.stringify(formData),
   });
-  return handleResponse(response);
+  return response.json();
 }
 
-export async function deleteJob() {
-  const response = "";
- return handleResponse(response);
+export async function updateJob(id, formData) {
+  const response = await fetch(`http://127.0.0.1:5000/api/jobs/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(formData),
+  });
+  return response.json();
 }
 
-export async function updateJob() {
-  const response = "";
- return handleResponse(response);
+export async function closeJob(id) {
+  const response = await fetch(`http://127.0.0.1:5000/api/jobs/${id}/close`, {
+    method: "PUT",
+    credentials: "include",
+  });
+  return response.json();
 }
 
-export async function applyToJob() {
-  const response = "";
- return handleResponse(response);
+export async function deleteJob(id) {
+  const response = await fetch(`http://127.0.0.1:5000/api/jobs/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return response.json();
 }
 
-export async function updateJobApplicationStatus() {
-  const response = "";
- return handleResponse(response);
+export async function applyToJob(id, coverLetter, resumeURL) {
+  const response = await fetch(`http://127.0.0.1:5000/api/jobs/${id}/apply`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ coverLetter, resumeURL }),
+  });
+  return response.json();
 }
 
-export async function closeJob() {
-  const response = "";
- return handleResponse(response);
+export async function updateJobApplicationStatus(applicationId, applicationStatus) {
+  const response = await fetch(`http://127.0.0.1:5000/api/job-applications/${applicationId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ applicationStatus }),
+  });
+  return response.json();
 }
 
 export async function fetchMentorships() {
-  const response = await fetch(`${API_BASE}/mentorships`);
-  return handleResponse(response);
+  const response = await fetch("http://127.0.0.1:5000/api/mentorships", {
+    credentials: "include",
+  });
+  return response.json();
 }
 
-export async function createMentorship(mentorshipData) {
-  const response = await fetch(`${API_BASE}/mentorships`, {
+export async function createMentorship(formData) {
+  const response = await fetch("http://127.0.0.1:5000/api/mentorships", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(mentorshipData),
+    credentials: "include",
+    body: JSON.stringify(formData),
   });
-  return handleResponse(response);
+  return response.json();
 }
 
-export async function deleteMentorship() {
-  const response = "";
- return handleResponse(response);
+export async function updateMentorship(id, formData) {
+  const response = await fetch(`http://127.0.0.1:5000/api/mentorships/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(formData),
+  });
+  return response.json();
 }
 
-export async function updateMentorship() {
-  const response = "";
- return handleResponse(response);
+export async function deactivateMentorship(id) {
+  const response = await fetch(`http://127.0.0.1:5000/api/mentorships/${id}/deactivate`, {
+    method: "PUT",
+    credentials: "include",
+  });
+  return response.json();
 }
 
-export async function deactivateMentorship() {
-  const response = "";
- return handleResponse(response);
+export async function deleteMentorship(id) {
+  const response = await fetch(`http://127.0.0.1:5000/api/mentorships/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return response.json();
 }
 
 export async function fetchMentorRequests() {
-  const response = await fetch(`${API_BASE}/mentorship-requests`);
-  return handleResponse(response);
+  const response = await fetch("http://127.0.0.1:5000/api/mentorship-requests", {
+    credentials: "include",
+  });
+  return response.json();
 }
 
-export async function createMentorRequest(requestData) {
-  const response = await fetch(`${API_BASE}/mentorship-requests`, {
+export async function createMentorRequest(formData) {
+  const response = await fetch("http://127.0.0.1:5000/api/mentorship-requests", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(requestData),
+    credentials: "include",
+    body: JSON.stringify(formData),
   });
-  return handleResponse(response);
+  return response.json();
 }
 
-export async function deleteMentorRequest() {
-  const response = "";
- return handleResponse(response);
+export async function updateMentorRequest(formData) {
+  const response = await fetch("http://127.0.0.1:5000/api/mentorship-requests", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(formData),
+  });
+  return response.json();
 }
 
-export async function updateMentorRequest() {
-  const response = "";
- return handleResponse(response);
+export async function deleteMentorRequest(formData) {
+  const response = await fetch("http://127.0.0.1:5000/api/mentorship-requests", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(formData),
+  });
+  return response.json();
 }

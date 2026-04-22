@@ -200,75 +200,6 @@ def me():
         "email": user["EMAIL"]
     }), 200
 
-# =========================================================
-# ARIANNA: EVENTS FEATURE
-# =========================================================
-
-@app.get("/api/events")
-def get_events():
-    cursor.execute("""
-        SELECT
-            EventID AS id,
-            Title AS title,
-            Description AS description,
-            Location AS location,
-            DATE_FORMAT(StartDateTime, '%Y-%m-%d %H:%i:%s') AS startDateTime,
-            DATE_FORMAT(EndDateTime, '%Y-%m-%d %H:%i:%s') AS endDateTime,
-            PrivacyType AS privacyType,
-            EventStatus AS status,
-            CancellationReason AS cancellationReason
-        FROM Event
-        ORDER BY StartDateTime ASC
-    """)
-    events = cursor.fetchall()
-    return jsonify(events), 200
-
-
-@app.post("/api/events")
-@login_required
-def create_event():
-    data = request.get_json()
-
-    title = data.get("title")
-    description = data.get("description")
-    location = data.get("location")
-    startDateTime = data.get("startDateTime")
-    endDateTime = data.get("endDateTime")
-    privacyType = data.get("privacyType", "Public")
-
-    if not title or not location or not startDateTime or not endDateTime:
-        return jsonify({"error": "Missing required event fields."}), 400
-
-    try:
-        start_dt = datetime.fromisoformat(startDateTime)
-        end_dt = datetime.fromisoformat(endDateTime)
-    except ValueError:
-        return jsonify({"error": "Invalid event date format."}), 400
-
-    if end_dt <= start_dt:
-        return jsonify({"error": "End date/time must be after start date/time."}), 400
-
-    parameters = (
-        g.user_id,
-        None,
-        title,
-        description,
-        location,
-        start_dt,
-        end_dt,
-        privacyType
-    )
-
-    cursor.callproc("CreateEvent", parameters)
-    db.commit()
-
-    return jsonify({"message": "Event created successfully"}), 201
-
-
-@app.put("/api/events/<int:event_id>")
-@login_required
-def update_event(event_id):
-    data = request.get_json()
 
 @app.post("/api/conversations")
 @login_required
@@ -607,6 +538,77 @@ def unlike_post(post_id):
     local_cursor.close()
 
     return jsonify({"message": "Post unliked"}), 200
+    
+# =========================================================
+# ARIANNA: EVENTS FEATURE
+# =========================================================
+
+@app.get("/api/events")
+def get_events():
+    cursor.execute("""
+        SELECT
+            EventID AS id,
+            Title AS title,
+            Description AS description,
+            Location AS location,
+            DATE_FORMAT(StartDateTime, '%Y-%m-%d %H:%i:%s') AS startDateTime,
+            DATE_FORMAT(EndDateTime, '%Y-%m-%d %H:%i:%s') AS endDateTime,
+            PrivacyType AS privacyType,
+            EventStatus AS status,
+            CancellationReason AS cancellationReason
+        FROM Event
+        ORDER BY StartDateTime ASC
+    """)
+    events = cursor.fetchall()
+    return jsonify(events), 200
+
+
+@app.post("/api/events")
+@login_required
+def create_event():
+    data = request.get_json()
+
+    title = data.get("title")
+    description = data.get("description")
+    location = data.get("location")
+    startDateTime = data.get("startDateTime")
+    endDateTime = data.get("endDateTime")
+    privacyType = data.get("privacyType", "Public")
+
+    if not title or not location or not startDateTime or not endDateTime:
+        return jsonify({"error": "Missing required event fields."}), 400
+
+    try:
+        start_dt = datetime.fromisoformat(startDateTime)
+        end_dt = datetime.fromisoformat(endDateTime)
+    except ValueError:
+        return jsonify({"error": "Invalid event date format."}), 400
+
+    if end_dt <= start_dt:
+        return jsonify({"error": "End date/time must be after start date/time."}), 400
+
+    parameters = (
+        g.user_id,
+        None,
+        title,
+        description,
+        location,
+        start_dt,
+        end_dt,
+        privacyType
+    )
+
+    cursor.callproc("CreateEvent", parameters)
+    db.commit()
+
+    return jsonify({"message": "Event created successfully"}), 201
+
+
+@app.put("/api/events/<int:event_id>")
+@login_required
+def update_event(event_id):
+    data = request.get_json()
+    
     title = data.get("title")
     description = data.get("description")
     location = data.get("location")
