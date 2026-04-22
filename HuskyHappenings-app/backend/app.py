@@ -548,6 +548,7 @@ def get_events():
     cursor.execute("""
         SELECT
             EventID AS id,
+            CreatedByUserID AS createdBy,
             Title AS title,
             Description AS description,
             Location AS location,
@@ -561,6 +562,12 @@ def get_events():
     """)
     events = cursor.fetchall()
     return jsonify(events), 200
+
+
+def is_event_creator(event_id, user_id):
+    cursor.execute("SELECT CreatedBy FROM Event WHERE EventID = %s", (event_id,))
+    event = cursor.fetchone()
+    return event and str(event["CreatedBy"]) == str(user_id)
 
 
 @app.post("/api/events")
@@ -587,6 +594,9 @@ def create_event():
     if end_dt <= start_dt:
         return jsonify({"error": "End date/time must be after start date/time."}), 400
 
+    if start_dt <= datetime.now():
+        return jsonify({"error": "Event must be in the future."}), 400
+
     parameters = (
         g.user_id,
         None,
@@ -607,8 +617,11 @@ def create_event():
 @app.put("/api/events/<int:event_id>")
 @login_required
 def update_event(event_id):
+    if not is_event_creator(event_id, g.user_id):
+        return jsonify({"error": "Only the creator can edit this event."}), 403
+
     data = request.get_json()
-    
+
     title = data.get("title")
     description = data.get("description")
     location = data.get("location")
@@ -626,7 +639,10 @@ def update_event(event_id):
         return jsonify({"error": "Invalid event date format."}), 400
 
     if end_dt <= start_dt:
-        return jsonify({"error": "End date/time must be after start date/time."}), 400
+        return jsonify({"error": "End must be after start."}), 400
+
+    if start_dt <= datetime.now():
+        return jsonify({"error": "Event must be scheduled in the future."}), 400
 
     parameters = (
         event_id,
@@ -648,15 +664,13 @@ def update_event(event_id):
 @app.put("/api/events/<int:event_id>/cancel")
 @login_required
 def cancel_event(event_id):
+    if not is_event_creator(event_id, g.user_id):
+        return jsonify({"error": "Only the creator can cancel this event."}), 403
+
     data = request.get_json() or {}
     cancellationReason = data.get("cancellationReason", "Cancelled by user")
 
-    parameters = (
-        event_id,
-        cancellationReason
-    )
-
-    cursor.callproc("CancelEvent", parameters)
+    cursor.callproc("CancelEvent", (event_id, cancellationReason))
     db.commit()
 
     return jsonify({"message": "Event cancelled successfully"}), 200
@@ -665,8 +679,10 @@ def cancel_event(event_id):
 @app.delete("/api/events/<int:event_id>")
 @login_required
 def delete_event(event_id):
-    parameters = (event_id,)
-    cursor.callproc("DeleteEvent", parameters)
+    if not is_event_creator(event_id, g.user_id):
+        return jsonify({"error": "Only the creator can delete this event."}), 403
+
+    cursor.callproc("DeleteEvent", (event_id,))
     db.commit()
 
     return jsonify({"message": "Event deleted successfully"}), 200
@@ -1085,7 +1101,6 @@ def remove_mentor_request():
     db.commit()
 
     return jsonify({"message": "Mentorship request removed successfully"}), 200
-
 
 
 @app.get("/api/health")
