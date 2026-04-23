@@ -11,7 +11,7 @@ import secrets
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])  # allows frontend to communicate with backend
+CORS(app, supports_credentials=True, origins=["https://localhost:5173"])
 
 
 # Connects the backend to the MySQL database
@@ -31,7 +31,7 @@ cursor = db.cursor(dictionary=True)
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        token = request.cookies.get('token')
+        token = request.cookies.get("token")
 
         if not token:
             return jsonify({"error": "Session cookie not found."}), 401
@@ -114,7 +114,6 @@ def signup():
         return jsonify({"error": "Invalid user type."}), 400
 
     db.commit()
-
     return jsonify({"message": "User created successfully"}), 201
 
 
@@ -137,25 +136,24 @@ def login():
         return jsonify({"error": "Invalid credentials"}), 401
 
     token = secrets.token_hex(32)
-    userID = user["USER_ID"]
-    createdAt = datetime.now(timezone.utc)
-    expiresAt = createdAt + timedelta(days=1)
+    user_id = user["USER_ID"]
+    created_at = datetime.now(timezone.utc)
+    expires_at = created_at + timedelta(days=1)
 
     response = jsonify({"message": "Login successful"})
     response.set_cookie(
-        'token',
+        "token",
         token,
-        expires=expiresAt,
-        secure=False,
+        expires=expires_at,
+        secure=True,
         httponly=True,
         samesite="Lax"
     )
 
-    parameters = (token, userID, createdAt, expiresAt)
+    parameters = (token, user_id, created_at, expires_at)
     cursor.callproc("INSERT_SESSION", parameters)
 
     db.commit()
-
     return response, 200
 
 
@@ -172,11 +170,11 @@ def logout():
         db.commit()
 
     response = jsonify({"message": "Logged out"})
-    response.set_cookie("token", "", expires=0, secure=False, httponly=True, samesite="Lax")
+    response.set_cookie("token", "", expires=0, secure=True, httponly=True, samesite="Lax")
     return response, 200
 
 
-# This functions returns information about logged in user
+# This function returns information about logged in user
 # Author: Ashley Pike
 @app.get("/api/me")
 @login_required
@@ -204,26 +202,25 @@ def me():
 def create_conversation():
     data = request.get_json()
     user_id = g.user_id
-    otherUsers = data.get("otherUsers")
-    conversationName = data.get("conversationName")
+    other_users = data.get("otherUsers")
+    conversation_name = data.get("conversationName")
 
-    cursor.execute("INSERT INTO CONVERSATIONS (NAME) VALUES (%s)", (conversationName,))
+    cursor.execute("INSERT INTO CONVERSATIONS (NAME) VALUES (%s)", (conversation_name,))
     conversation = cursor.lastrowid
 
     cursor.execute(
         "INSERT INTO CONVERSATION_MEMBERS (CONVERSATION_ID, USER_ID) VALUES (%s, %s)",
         (conversation, user_id)
     )
-    for each in otherUsers:
+
+    for each in other_users:
         cursor.execute(
             "INSERT INTO CONVERSATION_MEMBERS (CONVERSATION_ID, USER_ID) VALUES (%s, %s)",
             (conversation, each)
         )
 
-    response = jsonify({"message": "Conversation created"})
     db.commit()
-
-    return response, 201
+    return jsonify({"message": "Conversation created"}), 201
 
 
 @app.get("/api/conversations")
@@ -303,7 +300,7 @@ def send_message(conversation_id):
         return jsonify({"error": "Unauthorized"}), 403
 
     data = request.get_json()
-    body = data.get('body')
+    body = data.get("body")
     if not body:
         return jsonify({"error": "Message body required"}), 400
 
@@ -343,49 +340,48 @@ def edit_profile():
     data = request.get_json()
     email = data.get("email")
     name = data.get("name")
-    phoneNumber = data.get("phoneNumber")
-    birthDate = data.get("birthDate")
+    phone_number = data.get("phoneNumber")
+    birth_date = data.get("birthDate")
     bio = data.get("bio")
-    pictureUrl = data.get("pictureUrl")
-    userType = data.get("userType")
+    picture_url = data.get("pictureUrl")
+    user_type = data.get("userType")
     major = data.get("major")
-    graduationYear = data.get("graduationYear")
+    graduation_year = data.get("graduationYear")
     department = data.get("department")
-    officeLocation = data.get("officeLocation")
-    degreeEarned = data.get("degreeEarned")
-    currentEmployer = data.get("currentEmployer")
+    office_location = data.get("officeLocation")
+    degree_earned = data.get("degreeEarned")
+    current_employer = data.get("currentEmployer")
 
     cursor.execute("""
         UPDATE USERS
-        SET EMAIL = %s, NAME = %s, PHONE_NUMBER = %s, BIRTH_DATE = %s, bio = %s, PICTURE_URL = %s
+        SET EMAIL = %s, NAME = %s, PHONE_NUMBER = %s, BIRTH_DATE = %s, BIO = %s, PICTURE_URL = %s
         WHERE USER_ID = %s
-    """, (email, name, phoneNumber, birthDate, bio, pictureUrl, g.user_id))
+    """, (email, name, phone_number, birth_date, bio, picture_url, g.user_id))
 
-    if userType == "Student":
+    if user_type == "Student":
         cursor.execute("""
             UPDATE STUDENTS
             SET MAJOR = %s, GRADUATION_YEAR = %s
             WHERE USER_ID = %s
-        """, (major, graduationYear, g.user_id))
-    elif userType == "Faculty":
+        """, (major, graduation_year, g.user_id))
+    elif user_type == "Faculty":
         cursor.execute("""
             UPDATE FACULTY
             SET DEPARTMENT = %s, OFFICE_LOCATION = %s
             WHERE USER_ID = %s
-        """, (department, officeLocation, g.user_id))
-    elif userType == "Alumni":
+        """, (department, office_location, g.user_id))
+    elif user_type == "Alumni":
         cursor.execute("""
             UPDATE ALUMNI
             SET GRADUATION_YEAR = %s, DEGREE_EARNED = %s, CURRENT_EMPLOYER = %s
             WHERE USER_ID = %s
-        """, (graduationYear, degreeEarned, currentEmployer, g.user_id))
+        """, (graduation_year, degree_earned, current_employer, g.user_id))
 
     db.commit()
-
     return jsonify({"message": "Profile updated successfully."}), 200
 
 
-# This functions returns all posts to the feed
+# This function returns all posts to the feed
 # Author: Sophia Priola
 @app.get("/api/posts")
 def get_posts():
@@ -398,6 +394,7 @@ def get_posts():
 
     local_cursor.close()
     return jsonify(posts), 200
+
 
 @app.post("/api/posts")
 @login_required
@@ -418,6 +415,7 @@ def create_post():
 
     return jsonify({"message": "Post created successfully"}), 201
 
+# Author: Sophia Priola
 # Like a post
 @app.post("/api/posts/<int:post_id>/like")
 @login_required
@@ -443,7 +441,7 @@ def like_post(post_id):
 
     return jsonify({"message": "Post liked"}), 201
 
-
+# Author: Sophia Priola
 # Unlike a post
 @app.delete("/api/posts/<int:post_id>/like")
 @login_required
@@ -459,49 +457,8 @@ def unlike_post(post_id):
 
     return jsonify({"message": "Post unliked"}), 200
 
-# Get comments for a post
-@app.get("/api/posts/<int:post_id>/comments")
-def get_comments(post_id):
-    local_cursor = db.cursor(dictionary=True)
-    local_cursor.execute("""
-        SELECT 
-            C.COMMENT_ID,
-            C.POST_ID,
-            C.AUTHOR_ID,
-            U.USERNAME,
-            C.CONTENT,
-            C.TIMESTAMP
-        FROM COMMENTS C
-        JOIN USERS U ON C.AUTHOR_ID = U.USER_ID
-        WHERE C.POST_ID = %s
-        ORDER BY C.TIMESTAMP ASC
-    """, (post_id,))
-    
-    comments = local_cursor.fetchall()
-    local_cursor.close()
-    return jsonify(comments), 200
-
-
-# Create a comment on a post
-@app.post("/api/posts/<int:post_id>/comments")
-@login_required
-def create_comment(post_id):
-    data = request.get_json()
-    content = data.get("content")
-
-    if not content or not content.strip():
-        return jsonify({"error": "Comment content is required"}), 400
-
-    local_cursor = db.cursor(dictionary=True)
-    local_cursor.execute(
-        "INSERT INTO COMMENTS (POST_ID, AUTHOR_ID, CONTENT) VALUES (%s, %s, %s)",
-        (post_id, g.user_id, content)
-    )
-    db.commit()
-    local_cursor.close()
-
-    return jsonify({"message": "Comment created successfully"}), 201
-
+# Author: Sophia Priola
+# Allows users to share posts
 @app.post("/api/posts/<int:post_id>/share")
 @login_required
 def share_post(post_id):
@@ -529,10 +486,55 @@ def share_post(post_id):
 
     return jsonify({"message": "Post shared successfully"}), 201
 
+# Author: Sophia Priola
+# Get comments for a post
+@app.get("/api/posts/<int:post_id>/comments")
+def get_comments(post_id):
+    local_cursor = db.cursor(dictionary=True)
+    local_cursor.execute("""
+        SELECT 
+            C.COMMENT_ID,
+            C.POST_ID,
+            C.AUTHOR_ID,
+            U.USERNAME,
+            C.CONTENT,
+            C.TIMESTAMP
+        FROM COMMENTS C
+        JOIN USERS U ON C.AUTHOR_ID = U.USER_ID
+        WHERE C.POST_ID = %s
+        ORDER BY C.TIMESTAMP ASC
+    """, (post_id,))
+
+    comments = local_cursor.fetchall()
+    local_cursor.close()
+    return jsonify(comments), 200
+
+#
+# Create a comment on a post
+@app.post("/api/posts/<int:post_id>/comments")
+@login_required
+def create_comment(post_id):
+    data = request.get_json()
+    content = data.get("content")
+
+    if not content or not content.strip():
+        return jsonify({"error": "Comment content is required"}), 400
+
+    local_cursor = db.cursor(dictionary=True)
+    local_cursor.execute(
+        "INSERT INTO COMMENTS (POST_ID, AUTHOR_ID, CONTENT) VALUES (%s, %s, %s)",
+        (post_id, g.user_id, content)
+    )
+    db.commit()
+    local_cursor.close()
+
+    return jsonify({"message": "Comment created successfully"}), 201
+
 
 if __name__ == "__main__":
     app.run(
-        host='localhost',
+        host="localhost",
         port=5000,
-        debug=True
+        debug=True,
+        ssl_context="adhoc"
     )
