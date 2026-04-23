@@ -13,6 +13,7 @@ import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import Messages from "./pages/Messages.jsx";
 import Notifications from "./pages/Notifications.jsx";
+import Groups from "./pages/Groups.jsx";
 import CreatePostPage from "./pages/CreatePostPage.jsx";
 
 // Arianna imports
@@ -81,6 +82,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Notifications />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/groups"
+            element={
+              <ProtectedRoute>
+                <Groups />
               </ProtectedRoute>
             }
           />

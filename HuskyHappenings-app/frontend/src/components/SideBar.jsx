@@ -51,6 +51,7 @@ export default function Sidebar() {
               {hasUnreadNotifications && <span className="red-dot"></span>}
             </Link>
 
+            <Link to="/groups">Groups</Link>
             <Link to="/events">Events</Link>
             <Link to="/jobs">Job Board</Link>
             <Link to="/mentorship">Mentorship</Link>
