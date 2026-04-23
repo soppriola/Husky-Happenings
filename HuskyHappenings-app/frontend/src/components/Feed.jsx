@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Post from "./Post";
+import "./Feed.css";
 
 export default function Feed() {
   const navigate = useNavigate();
@@ -29,46 +30,45 @@ export default function Feed() {
   }, []);
 
   return (
-    <div
-      style={{
-        maxWidth: "700px",
-        margin: "0 auto",
-        padding: "20px",
-      }}
-    >
-      <h2 style={{ marginBottom: "20px" }}>News Feed</h2>
+    <section className="feed">
+      <div className="feed-topbar">
+        <div>
+          <p className="feed-kicker">Your Personalized Feed</p>
+          <h2></h2>
+        </div>
 
-      <div style={{ marginBottom: "20px" }}>
         <button
+          className="feed-create-btn"
           onClick={() => navigate("/create-post")}
-          style={{
-            backgroundColor: "#1d4ed8",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            padding: "10px 16px",
-            cursor: "pointer",
-            fontSize: "14px",
-          }}
         >
           Create Post
         </button>
       </div>
 
-      {posts.map((post) => (
-        <Post
-          key={post.POST_ID}
-          postId={post.POST_ID}
-          author={post.AUTHOR}
-          content={post.CONTENT}
-          time={post.CREATED_AT}
-          likeCount={post.LIKE_COUNT || 0}
-          onRefresh={loadPosts}
-          sharedPostId={post.SHARED_POST_ID}
-          originalContent={post.ORIGINAL_CONTENT}
-          originalAuthor={post.ORIGINAL_AUTHOR}
-        />
-      ))}
-    </div>
+      {posts.length === 0 ? (
+        <div className="feed-empty-state">
+          <div className="feed-empty-icon">HH</div>
+          <h3>No posts yet</h3>
+          <p>Be the first to share something with the HuskyHappenings community.</p>
+        </div>
+      ) : (
+        <div className="feed-post-list">
+          {posts.map((post) => (
+            <Post
+              key={post.POST_ID}
+              postId={post.POST_ID}
+              author={post.AUTHOR}
+              content={post.CONTENT}
+              time={post.CREATED_AT}
+              likeCount={post.LIKE_COUNT || 0}
+              onRefresh={loadPosts}
+              sharedPostId={post.SHARED_POST_ID}
+              originalContent={post.ORIGINAL_CONTENT}
+              originalAuthor={post.ORIGINAL_AUTHOR}
+            />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

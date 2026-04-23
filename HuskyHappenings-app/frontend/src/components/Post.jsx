@@ -45,7 +45,7 @@ export default function Post({
     try {
       setLoading(true);
 
-      const response = await fetch(`https://localhost:5000/api/posts/${postId}/like`, {
+      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
         method: "POST",
         credentials: "include",
       });
@@ -68,7 +68,7 @@ export default function Post({
     try {
       setShareLoading(true);
 
-      const response = await fetch(`https://localhost:5000/api/posts/${postId}/share`, {
+      const response = await fetch(`http://localhost:5000/api/posts/${postId}/share`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export default function Post({
     if (!commentText.trim()) return;
 
     try {
-      const response = await fetch(`https://localhost:5000/api/posts/${postId}/comments`, {
+      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
