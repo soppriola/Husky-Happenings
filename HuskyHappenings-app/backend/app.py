@@ -586,78 +586,7 @@ def unlike_post(post_id):
 # Share a post
 @app.post("/api/posts/<int:post_id>/share")
 @login_required
-def update_event(event_id):
-    if not is_event_creator(event_id, g.user_id):
-        return jsonify({"error": "Only the creator can edit this event."}), 403
-
-    data = request.get_json()
-
-    title = data.get("title")
-    description = data.get("description")
-    location = data.get("location")
-    startDateTime = data.get("startDateTime")
-    endDateTime = data.get("endDateTime")
-    privacyType = data.get("privacyType", "Public")
-
-    if not title or not location or not startDateTime or not endDateTime:
-        return jsonify({"error": "Missing required event fields."}), 400
-
-    try:
-        start_dt = datetime.fromisoformat(startDateTime)
-        end_dt = datetime.fromisoformat(endDateTime)
-    except ValueError:
-        return jsonify({"error": "Invalid event date format."}), 400
-
-    if end_dt <= start_dt:
-        return jsonify({"error": "End must be after start."}), 400
-
-    if start_dt <= datetime.now():
-        return jsonify({"error": "Event must be scheduled in the future."}), 400
-
-    parameters = (
-        event_id,
-        None,
-        title,
-        description,
-        location,
-        start_dt,
-        end_dt,
-        privacyType
-    )
-
-    cursor.callproc("UpdateEvent", parameters)
-    db.commit()
-
-    return jsonify({"message": "Event updated successfully"}), 200
-
-
-@app.put("/api/events/<int:event_id>/cancel")
-@login_required
-def cancel_event(event_id):
-    if not is_event_creator(event_id, g.user_id):
-        return jsonify({"error": "Only the creator can cancel this event."}), 403
-
-    data = request.get_json() or {}
-    cancellationReason = data.get("cancellationReason", "Cancelled by user")
-
-    cursor.callproc("CancelEvent", (event_id, cancellationReason))
-    db.commit()
-
-    return jsonify({"message": "Event cancelled successfully"}), 200
-
-
-@app.delete("/api/events/<int:event_id>")
-@login_required
-def delete_event(event_id):
-    if not is_event_creator(event_id, g.user_id):
-        return jsonify({"error": "Only the creator can delete this event."}), 403
-
-    cursor.callproc("DeleteEvent", (event_id,))
-    db.commit()
-
-    return jsonify({"message": "Event deleted successfully"}), 200
-
-
+def share_post(post_id):
     local_cursor = db.cursor(dictionary=True)
 
     local_cursor.execute(
@@ -1191,6 +1120,882 @@ def decline_group_request(group_id, user_id):
     )
 
     return jsonify({"message": "Request declined"}), 200
+
+# =========================================================
+# ARIANNA: EVENTS FEATURE
+# =========================================================
+
+# Returns events
+# Author: Arianna Kelsey
+@app.get("/api/events")
+@login_required
+def get_events():
+    cursor.execute("""
+        SELECT
+            e.EventID AS id,
+            e.CreatedByUserID AS createdBy,
+            (e.CreatedByUserID = %s) AS canManage,
+            e.Title AS title,
+            e.Description AS description,
+            e.Location AS location,
+            CAST(e.StartDateTime AS CHAR) AS startDateTime,
+            CAST(e.EndDateTime AS CHAR) AS endDateTime,
+            e.PrivacyType AS privacyType,
+            e.EventStatus AS status,
+            e.CancellationReason AS cancellationReason,
+            e.GroupID AS groupID
+        FROM Event e
+        WHERE
+            e.PrivacyType = 'Public'
+            OR e.GroupID IN (
+                SELECT gm.GroupID
+                FROM GroupMember gm
+                WHERE gm.UserID = %s
+                  AND gm.MembershipStatus = 'Accepted'
+            )
+        ORDER BY e.StartDateTime ASC
+    """, (g.user_id, g.user_id))
+
+    events = cursor.fetchall()
+    return jsonify(events), 200
+
+# Create Event
+# Author: Arianna Kelsey
+@app.post("/api/events")
+@login_required
+def create_event():
+    data = request.get_json()
+
+    title = data.get("title")
+    description = data.get("description")
+    location = data.get("location")
+    startDateTime = data.get("startDateTime")
+    endDateTime = data.get("endDateTime")
+    privacyType = data.get("privacyType", "Public")
+    groupID = data.get("groupID")
+
+    if groupID == "":
+        groupID = None
+
+    if not title or not location or not startDateTime or not endDateTime:
+        return jsonify({"error": "Missing required event fields."}), 400
+
+    try:
+        start_dt = datetime.fromisoformat(startDateTime)
+        end_dt = datetime.fromisoformat(endDateTime)
+    except ValueError:
+        return jsonify({"error": "Invalid event date format."}), 400
+
+    if end_dt <= start_dt:
+        return jsonify({"error": "End date/time must be after start date/time."}), 400
+
+    if start_dt <= datetime.now():
+        return jsonify({"error": "Event must be in the future."}), 400
+
+    # If PRIVATE → must have group
+    if privacyType == "Private" and not groupID:
+        return jsonify({"error": "Private events must belong to a group"}), 400
+
+    parameters = (
+        g.user_id,
+        groupID,   
+        title,
+        description,
+        location,
+        start_dt,
+        end_dt,
+        privacyType
+    )
+
+    cursor.callproc("CreateEvent", parameters)
+    db.commit()
+
+    return jsonify({"message": "Event created successfully"}), 201
+
+# Check if the user is the event creator
+# Author: Arianna Kelsey
+def is_event_creator(event_id, user_id):
+    cursor.execute(
+        """
+        SELECT CreatedByUserID
+        FROM Event
+        WHERE EventID = %s
+        """,
+        (event_id,)
+    )
+
+    event = cursor.fetchone()
+
+    if not event:
+        return False
+
+    return str(event["CreatedByUserID"]) == str(user_id)
+
+# Updates Events
+# Author: Arianna Kelsey
+@app.put("/api/events/<int:event_id>")
+@login_required
+def update_event(event_id):
+    if not is_event_creator(event_id, g.user_id):
+        return jsonify({"error": "Only the creator can edit this event."}), 403
+
+    data = request.get_json()
+
+    title = data.get("title")
+    description = data.get("description")
+    location = data.get("location")
+    startDateTime = data.get("startDateTime")
+    endDateTime = data.get("endDateTime")
+    privacyType = data.get("privacyType", "Public")
+
+    if not title or not location or not startDateTime or not endDateTime:
+        return jsonify({"error": "Missing required event fields."}), 400
+
+    try:
+        start_dt = datetime.fromisoformat(startDateTime)
+        end_dt = datetime.fromisoformat(endDateTime)
+    except ValueError:
+        return jsonify({"error": "Invalid event date format."}), 400
+
+    if end_dt <= start_dt:
+        return jsonify({"error": "End must be after start."}), 400
+
+    if start_dt <= datetime.now():
+        return jsonify({"error": "Event must be scheduled in the future."}), 400
+
+    parameters = (
+        event_id,
+        None,
+        title,
+        description,
+        location,
+        start_dt,
+        end_dt,
+        privacyType
+    )
+
+    cursor.callproc("UpdateEvent", parameters)
+    db.commit()
+
+    return jsonify({"message": "Event updated successfully"}), 200
+
+# Cancels an event
+# Author: Arianna Kelsey
+@app.put("/api/events/<int:event_id>/cancel")
+@login_required
+def cancel_event(event_id):
+    if not is_event_creator(event_id, g.user_id):
+        return jsonify({"error": "Only the creator can cancel this event."}), 403
+
+    data = request.get_json() or {}
+    cancellationReason = data.get("cancellationReason", "Cancelled by user")
+
+    cursor.callproc("CancelEvent", (event_id, cancellationReason))
+    db.commit()
+
+    return jsonify({"message": "Event cancelled successfully"}), 200
+
+# Deletes a posted event
+# Author: Arianna Kelsey
+@app.delete("/api/events/<int:event_id>")
+@login_required
+def delete_event(event_id):
+    if not is_event_creator(event_id, g.user_id):
+        return jsonify({"error": "Only the creator can delete this event."}), 403
+
+    cursor.callproc("DeleteEvent", (event_id,))
+    db.commit()
+
+    return jsonify({"message": "Event deleted successfully"}), 200
+
+# Register for Event
+# Author: Arianna Kelsey
+@app.post("/api/events/<int:event_id>/register")
+@login_required
+def register_for_event(event_id):
+    data = request.get_json() or {}
+    rsvpStatus = data.get("rsvpStatus", "Going")
+
+    # Get event info
+    cursor.execute("""
+        SELECT PrivacyType, GroupID
+        FROM Event
+        WHERE EventID = %s
+    """, (event_id,))
+    event = cursor.fetchone()
+
+    if not event:
+        return jsonify({"error": "Event not found"}), 404
+
+    # PRIVATE EVENT CHECK
+    if event["PrivacyType"] == "Private":
+        cursor.execute("""
+            SELECT 1 FROM GroupMember
+            WHERE GroupID = %s
+              AND UserID = %s
+              AND MembershipStatus = 'Accepted'
+        """, (event["GroupID"], g.user_id))
+
+        member = cursor.fetchone()
+
+        if not member:
+            return jsonify({"error": "You are not allowed to join this private event"}), 403
+
+    # existing logic
+    cursor.execute("""
+        SELECT EventRegistrationID
+        FROM EventRegistration
+        WHERE EventID = %s AND UserID = %s
+    """, (event_id, g.user_id))
+
+    existing = cursor.fetchone()
+
+    if existing:
+        cursor.execute("""
+            UPDATE EventRegistration
+            SET RSVPStatus = %s,
+                RegistrationStatus = 'Responded'
+            WHERE EventID = %s AND UserID = %s
+        """, (rsvpStatus, event_id, g.user_id))
+    else:
+        cursor.execute("""
+            INSERT INTO EventRegistration
+                (EventID, UserID, RSVPStatus, RegistrationStatus)
+            VALUES
+                (%s, %s, %s, 'Responded')
+        """, (event_id, g.user_id, rsvpStatus))
+
+    db.commit()
+
+    return jsonify({"message": "Event RSVP saved successfully"}), 201
+
+# Update Event Registration
+# Author: Arianna Kelsey
+@app.put("/api/events/<int:event_id>/register")
+@login_required
+def update_event_registration(event_id):
+    data = request.get_json()
+    rsvpStatus = data.get("rsvpStatus")
+    registrationStatus = data.get("registrationStatus", "Responded")
+
+    if not rsvpStatus:
+        return jsonify({"error": "Missing RSVP status."}), 400
+
+    parameters = (
+        event_id,
+        g.user_id,
+        rsvpStatus,
+        registrationStatus
+    )
+
+    cursor.callproc("UpdateEventRegistration", parameters)
+    db.commit()
+
+    return jsonify({"message": "Event registration updated successfully"}), 200
+
+
+# =========================================================
+# ARIANNA: JOB BOARD FEATURE
+# =========================================================
+
+# Checks if user is the job creator
+# Author: Arianna Kelsey
+def is_job_creator(job_id, user_id):
+    cursor.execute(
+        """
+        SELECT PostedByUserID
+        FROM JobPosting
+        WHERE JobPostingID = %s
+        """,
+        (job_id,)
+    )
+    job = cursor.fetchone()
+
+    if not job:
+        return False
+
+    return str(job["PostedByUserID"]) == str(user_id)
+
+# Returns posted jobs
+# Author: Arianna Kelsey
+@app.get("/api/jobs")
+@login_required
+def get_jobs():
+    cursor.execute("""
+        SELECT
+            JobPostingID AS id,
+            PostedByUserID AS createdBy,
+            (PostedByUserID = %s) AS canManage,
+            Title AS title,
+            Company AS company,
+            Location AS location,
+            Description AS description,
+            ApplicationMethod AS applicationMethod,
+            ApplicationURL AS applicationURL,
+            ContactEmail AS contactEmail,
+            CAST(Deadline AS CHAR) AS deadline,
+            JobStatus AS status
+        FROM JobPosting
+        ORDER BY Deadline ASC
+    """, (g.user_id,))
+
+    jobs = cursor.fetchall()
+
+    for job in jobs:
+        if job["canManage"] == 1 or job["canManage"] is True:
+            cursor.execute("""
+                SELECT
+                    ja.JobApplicationID AS applicationId,
+                    ja.JobPostingID AS jobId,
+                    ja.ApplicantUserID AS applicantUserId,
+                    u.NAME AS applicantName,
+                    u.EMAIL AS applicantEmail,
+                    ja.ApplicationStatus AS applicationStatus,
+                    ja.CoverLetter AS coverLetter,
+                    ja.ResumeURL AS resumeURL,
+                    CAST(ja.AppliedAt AS CHAR) AS appliedAt
+                FROM JobApplication ja
+                JOIN USERS u
+                    ON ja.ApplicantUserID = u.USER_ID
+                WHERE ja.JobPostingID = %s
+                ORDER BY ja.AppliedAt DESC
+            """, (job["id"],))
+            job["applications"] = cursor.fetchall()
+        else:
+            job["applications"] = []
+
+    return jsonify(jobs), 200
+
+# Returns job application that have been applied for
+# Author: Arianna Kelsey
+@app.get("/api/my-job-applications")
+@login_required
+def get_my_job_applications():
+    cursor.execute("""
+        SELECT
+            ja.JobApplicationID AS applicationId,
+            ja.JobPostingID AS jobId,
+            jp.Title AS jobTitle,
+            jp.Company AS company,
+            ja.ApplicationStatus AS applicationStatus,
+            ja.CoverLetter AS coverLetter,
+            ja.ResumeURL AS resumeURL,
+            CAST(ja.AppliedAt AS CHAR) AS appliedAt
+        FROM JobApplication ja
+        JOIN JobPosting jp
+            ON ja.JobPostingID = jp.JobPostingID
+        WHERE ja.ApplicantUserID = %s
+        ORDER BY ja.AppliedAt DESC
+    """, (g.user_id,))
+
+    applications = cursor.fetchall()
+    return jsonify(applications), 200
+
+# Creates a job posting
+# Author: Arianna Kelsey
+@app.post("/api/jobs")
+@login_required
+def create_job():
+    data = request.get_json()
+
+    title = data.get("title")
+    company = data.get("company")
+    location = data.get("location")
+    description = data.get("description")
+    contactEmail = data.get("contactEmail")
+    deadline = data.get("deadline")
+
+    applicationMethod = "Email"
+    applicationURL = None
+
+    if not title or not company or not location or not description or not contactEmail or not deadline:
+        return jsonify({"error": "Missing required job fields."}), 400
+
+    try:
+        deadline_dt = datetime.fromisoformat(deadline)
+    except ValueError:
+        return jsonify({"error": "Invalid deadline format."}), 400
+
+    parameters = (
+        g.user_id,
+        title,
+        company,
+        location,
+        description,
+        applicationMethod,
+        applicationURL,
+        contactEmail,
+        deadline_dt
+    )
+
+    cursor.callproc("CreateJobPosting", parameters)
+    db.commit()
+
+    return jsonify({"message": "Job created successfully"}), 201
+
+# Update job description and features
+# Author: Arianna Kelsey
+@app.put("/api/jobs/<int:job_id>")
+@login_required
+def update_job(job_id):
+    if not is_job_creator(job_id, g.user_id):
+        return jsonify({"error": "Only the creator can edit this job posting."}), 403
+
+    data = request.get_json()
+
+    title = data.get("title")
+    company = data.get("company")
+    location = data.get("location")
+    description = data.get("description")
+    contactEmail = data.get("contactEmail")
+    deadline = data.get("deadline")
+    status = data.get("status", "Active")
+
+    applicationMethod = "Email"
+    applicationURL = None
+
+    if not title or not company or not location or not description or not contactEmail or not deadline:
+        return jsonify({"error": "Missing required job fields."}), 400
+
+    try:
+        deadline_dt = datetime.fromisoformat(deadline)
+    except ValueError:
+        return jsonify({"error": "Invalid deadline format."}), 400
+
+    parameters = (
+        job_id,
+        title,
+        company,
+        location,
+        description,
+        applicationMethod,
+        applicationURL,
+        contactEmail,
+        deadline_dt,
+        status
+    )
+
+    cursor.callproc("UpdateJobPosting", parameters)
+    db.commit()
+
+    return jsonify({"message": "Job updated successfully"}), 200
+
+# Close a job posting from submissions
+# Author: Arianna Kelsey
+@app.put("/api/jobs/<int:job_id>/close")
+@login_required
+def close_job(job_id):
+    if not is_job_creator(job_id, g.user_id):
+        return jsonify({"error": "Only the creator can close this job posting."}), 403
+
+    cursor.callproc("CloseJobPosting", (job_id,))
+    db.commit()
+
+    return jsonify({"message": "Job closed successfully"}), 200
+
+# Delete a job posting entirely
+# Author: Arianna Kelsey
+@app.delete("/api/jobs/<int:job_id>")
+@login_required
+def delete_job(job_id):
+    if not is_job_creator(job_id, g.user_id):
+        return jsonify({"error": "Only the creator can delete this job posting."}), 403
+
+    cursor.callproc("DeleteJobPosting", (job_id,))
+    db.commit()
+
+    return jsonify({"message": "Job deleted successfully"}), 200
+
+# Apply to a job
+# Author: Arianna Kelsey
+@app.post("/api/jobs/<int:job_id>/apply")
+@login_required
+def apply_to_job(job_id):
+    data = request.get_json()
+
+    coverLetter = data.get("coverLetter", "")
+    resumeURL = data.get("resumeURL", "")
+
+    cursor.execute("""
+        SELECT JobStatus
+        FROM JobPosting
+        WHERE JobPostingID = %s
+    """, (job_id,))
+
+    job = cursor.fetchone()
+
+    if not job:
+        return jsonify({"error": "Job posting not found."}), 404
+
+    if job["JobStatus"] == "Closed":
+        return jsonify({"error": "This job is closed and no longer accepting applications."}), 400
+
+    if is_job_creator(job_id, g.user_id):
+        return jsonify({"error": "You cannot apply to your own job posting."}), 400
+
+    parameters = (
+        job_id,
+        g.user_id,
+        coverLetter,
+        resumeURL
+    )
+
+    try:
+        cursor.callproc("ApplyToJob", parameters)
+        db.commit()
+    except mysql.connector.Error as err:
+        if err.errno == 1062:
+            return jsonify({"error": "You already applied to this job."}), 400
+        return jsonify({"error": str(err)}), 500
+
+    return jsonify({"message": "Applied to job successfully"}), 201
+
+# Update Job Application status
+# Author: Arianna Kelsey
+@app.put("/api/job-applications/<int:application_id>")
+@login_required
+def update_job_application_status(application_id):
+    data = request.get_json()
+    applicationStatus = data.get("applicationStatus")
+
+    if not applicationStatus:
+        return jsonify({"error": "Missing application status."}), 400
+
+    cursor.execute("""
+        SELECT jp.PostedByUserID
+        FROM JobApplication ja
+        JOIN JobPosting jp
+            ON ja.JobPostingID = jp.JobPostingID
+        WHERE ja.JobApplicationID = %s
+    """, (application_id,))
+
+    application = cursor.fetchone()
+
+    if not application:
+        return jsonify({"error": "Application not found."}), 404
+
+    if str(application["PostedByUserID"]) != str(g.user_id):
+        return jsonify({"error": "Only the job creator can update this application status."}), 403
+
+    cursor.callproc("UpdateJobApplicationStatus", (application_id, applicationStatus))
+    db.commit()
+
+    return jsonify({"message": "Job application status updated successfully"}), 200
+
+# Delete job application
+# Author: Arianna Kelsey
+@app.delete("/api/job-applications/<int:application_id>")
+@login_required
+def delete_job_application(application_id):
+    cursor.execute("""
+        SELECT jp.PostedByUserID, ja.ApplicationStatus
+        FROM JobApplication ja
+        JOIN JobPosting jp
+            ON ja.JobPostingID = jp.JobPostingID
+        WHERE ja.JobApplicationID = %s
+    """, (application_id,))
+
+    application = cursor.fetchone()
+
+    if not application:
+        return jsonify({"error": "Application not found."}), 404
+
+    if str(application["PostedByUserID"]) != str(g.user_id):
+        return jsonify({"error": "Only the job creator can delete this application."}), 403
+
+    if application["ApplicationStatus"] not in ["Rejected", "Declined"]:
+        return jsonify({"error": "Only declined applications can be deleted."}), 400
+
+    cursor.execute(
+        "DELETE FROM JobApplication WHERE JobApplicationID = %s",
+        (application_id,)
+    )
+    db.commit()
+
+    return jsonify({"message": "Application deleted successfully"}), 200
+
+
+# =========================================================
+# ARIANNA: MENTORSHIP FEATURE
+# Database-backed using HGroup / GroupMember
+# =========================================================
+
+# Checks if indiviual is group owner
+# Author: Arianna Kelsey
+def is_group_owner(group_id, user_id):
+    cursor.execute("""
+        SELECT CreatedByUserID
+        FROM HGroup
+        WHERE GroupID = %s
+    """, (group_id,))
+
+    group = cursor.fetchone()
+
+    if not group:
+        return False
+
+    return str(group["CreatedByUserID"]) == str(user_id)
+
+# Returns available mentorships
+# Author: Arianna Kelsey
+@app.get("/api/mentorships")
+@login_required
+def get_mentorships():
+    cursor.execute("""
+        SELECT
+            hg.GroupID AS id,
+            hg.CreatedByUserID AS createdBy,
+            (hg.CreatedByUserID = %s) AS canManage,
+            hg.GroupName AS name,
+            hg.StudyCategory AS focusArea,
+            hg.Description AS description,
+            hg.PrivacyType AS privacyType,
+            hg.IsActive AS isActive
+        FROM HGroup hg
+        WHERE
+            hg.PrivacyType = 'Public'
+            OR hg.CreatedByUserID = %s
+            OR hg.GroupID IN (
+                SELECT GroupID
+                FROM GroupMember
+                WHERE UserID = %s
+                  AND MembershipStatus = 'Accepted'
+            )
+        ORDER BY hg.GroupID ASC
+    """, (g.user_id, g.user_id, g.user_id))
+
+    return jsonify(cursor.fetchall()), 200
+
+# Gets requests for mentorships
+# Author: Arianna Kelsey
+@app.get("/api/my-mentorship-requests")
+@login_required
+def get_my_requests():
+    cursor.execute("""
+        SELECT
+            gm.GroupID AS groupId,
+            hg.GroupName AS groupName,
+            gm.RoleType AS roleType,
+            gm.MembershipStatus AS membershipStatus,
+            CAST(gm.JoinedAt AS CHAR) AS joinedAt,
+            u.NAME AS creatorName,
+            u.EMAIL AS creatorEmail
+        FROM GroupMember gm
+        JOIN HGroup hg ON gm.GroupID = hg.GroupID
+        JOIN USERS u ON hg.CreatedByUserID = u.USER_ID
+        WHERE gm.UserID = %s
+    """, (g.user_id,))
+
+    return jsonify(cursor.fetchall()), 200
+
+# Create a mentorship program posting 
+# Author: Arianna Kelsey
+@app.post("/api/mentorships")
+@login_required
+def create_mentorship():
+    data = request.get_json()
+
+    name = data.get("name")
+    focusArea = data.get("focusArea")
+    description = data.get("description")
+    privacyType = data.get("privacyType", "Public")
+
+    if not name or not focusArea or not description:
+        return jsonify({"error": "Missing required mentorship fields."}), 400
+
+    parameters = (
+        g.user_id,
+        name,
+        focusArea,
+        description,
+        privacyType
+    )
+
+    cursor.callproc("CreateGroup", parameters)
+    db.commit()
+
+    return jsonify({"message": "Mentorship program created successfully"}), 201
+
+# Update mentorship
+# Author: Arianna Kelsey
+@app.put("/api/mentorships/<int:group_id>")
+@login_required
+def update_mentorship(group_id):
+    if not is_group_owner(group_id, g.user_id):
+        return jsonify({"error": "Only the creator can modify this mentorship program."}), 403
+
+    data = request.get_json()
+
+    name = data.get("name")
+    focusArea = data.get("focusArea")
+    description = data.get("description")
+    privacyType = data.get("privacyType", "Public")
+    isActive = data.get("isActive", True)
+
+    if not name or not focusArea or not description:
+        return jsonify({"error": "Missing required mentorship fields."}), 400
+
+    parameters = (
+        group_id,
+        name,
+        focusArea,
+        description,
+        privacyType,
+        isActive
+    )
+
+    cursor.callproc("UpdateGroup", parameters)
+    db.commit()
+
+    return jsonify({"message": "Mentorship program updated successfully"}), 200
+
+# Deactivate Mentorship posting
+# Author: Arianna Kelsey
+@app.put("/api/mentorships/<int:group_id>/deactivate")
+@login_required
+def deactivate_mentorship(group_id):
+    if not is_group_owner(group_id, g.user_id):
+        return jsonify({"error": "Only the creator can modify this mentorship program."}), 403
+
+    cursor.callproc("DeactivateGroup", (group_id,))
+    db.commit()
+
+    return jsonify({"message": "Mentorship program deactivated successfully"}), 200
+
+# Delete mentorship program
+# Arianna Kelsey
+@app.delete("/api/mentorships/<int:group_id>")
+@login_required
+def delete_mentorship(group_id):
+    if not is_group_owner(group_id, g.user_id):
+        return jsonify({"error": "Only the creator can modify this mentorship program."}), 403
+
+    cursor.callproc("DeleteGroup", (group_id,))
+    db.commit()
+
+    return jsonify({"message": "Mentorship program deleted successfully"}), 200
+
+# Returns the requests for a mentor from a program
+# Author: Arianna Kelsey
+@app.get("/api/mentorship-requests")
+@login_required
+def get_mentor_requests():
+    cursor.execute("""
+        SELECT
+            gm.GroupID AS groupId,
+            gm.UserID AS userId,
+            u.NAME AS userName,
+            hg.GroupName AS groupName,
+            gm.RoleType AS roleType,
+            gm.MembershipStatus AS membershipStatus,
+            CAST(gm.JoinedAt AS CHAR) AS joinedAt
+        FROM GroupMember gm
+        JOIN USERS u
+            ON gm.UserID = u.USER_ID
+        JOIN HGroup hg
+            ON gm.GroupID = hg.GroupID
+        WHERE hg.CreatedByUserID = %s
+          AND gm.UserID != %s
+        ORDER BY gm.GroupID ASC, gm.UserID ASC
+    """, (g.user_id, g.user_id))
+
+    requests_data = cursor.fetchall()
+    return jsonify(requests_data), 200
+
+# Create a mentor request
+# Author: Arianna Kelsey
+@app.post("/api/mentorship-requests")
+@login_required
+def create_mentor_request():
+    data = request.get_json()
+
+    groupID = data.get("groupID")
+    roleType = data.get("roleType", "Member")
+    membershipStatus = "Pending"
+
+    if not groupID:
+        return jsonify({"error": "Missing groupID for mentorship request."}), 400
+
+    if is_group_owner(groupID, g.user_id):
+        return jsonify({"error": "You cannot request your own mentorship program."}), 400
+
+    try:
+        parameters = (
+            int(groupID),
+            g.user_id,
+            roleType,
+            membershipStatus
+        )
+
+        cursor.callproc("AddGroupMember", parameters)
+        db.commit()
+
+    except mysql.connector.Error as err:
+        if err.errno == 1062:
+            return jsonify({"error": "You already requested this mentorship program."}), 400
+        return jsonify({"error": str(err)}), 500
+
+    return jsonify({"message": "Mentorship request submitted successfully"}), 201
+
+# Update mentor requests
+# Author: Arianna Kelsey
+@app.put("/api/mentorship-requests")
+@login_required
+def update_mentor_request():
+    data = request.get_json()
+
+    groupID = data.get("groupID")
+    userID = data.get("userID")
+    roleType = data.get("roleType", "Member")
+    membershipStatus = data.get("membershipStatus")
+
+    if not groupID or not userID or not membershipStatus:
+        return jsonify({"error": "Missing required mentorship request fields."}), 400
+
+    if not is_group_owner(groupID, g.user_id):
+        return jsonify({"error": "Only the program creator can accept requests."}), 403
+
+    parameters = (
+        int(groupID),
+        int(userID),
+        roleType,
+        membershipStatus
+    )
+
+    cursor.callproc("UpdateGroupMemberStatus", parameters)
+    db.commit()
+
+    return jsonify({"message": "Mentorship request updated successfully"}), 200
+
+# Remove a mentorship request
+# Author: Arianna Kelsey
+@app.delete("/api/mentorship-requests")
+@login_required
+def remove_mentor_request():
+    data = request.get_json()
+
+    groupID = data.get("groupID")
+    userID = data.get("userID")
+
+    if not groupID or not userID:
+        return jsonify({"error": "Missing groupID or userID."}), 400
+
+    if not is_group_owner(groupID, g.user_id):
+        return jsonify({"error": "Only the program creator can remove requests."}), 403
+
+    parameters = (
+        int(groupID),
+        int(userID)
+    )
+
+    cursor.callproc("RemoveGroupMember", parameters)
+    db.commit()
+
+    return jsonify({"message": "Mentorship request removed successfully"}), 200
+
+@app.get("/api/health")
+def health_check():
+    return jsonify({"message": "Backend is running"}), 200
 
 if __name__ == "__main__":
     app.run(
