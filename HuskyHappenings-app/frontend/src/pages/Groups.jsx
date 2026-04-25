@@ -118,7 +118,7 @@ export default function Groups() {
 
     try {
       const response = await fetch(
-        `https://localhost:5000/api/groups/${groupId}/join`,
+        `http://localhost:5000/api/groups/${groupId}/join`,
         {
           method: "POST",
           credentials: "include",
@@ -325,25 +325,21 @@ export default function Groups() {
                 <p className="group-card-description">{group.Description}</p>
 
                 <div className="group-card-footer">
-                  {group.CurrentUserStatus === "Accepted" ? (
-                    <button className="btn btn-secondary btn-sm" disabled>
-                      Joined
-                    </button>
+                 {group.CurrentUserStatus === "Accepted" ? (
+                    <p className="group-status joined">Joined</p>
                   ) : group.CurrentUserStatus === "Pending" ? (
-                    <button className="btn btn-secondary btn-sm" disabled>
-                      Request Pending
-                    </button>
-                  ) : (
+                    <p className="group-status pending">Request Sent</p>
+                ) : (
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => handleJoinGroup(group.GroupID)}
-                    >
-                      {group.PrivacyType === "Private"
-                        ? "Request to Join"
-                        : "Join Group"}
-                    </button>
-                  )}
-                </div>
+                >
+                  {group.PrivacyType === "Private"
+                    ? "Request to Join"
+                    : "Join Group"}
+               </button>
+            )}
+        </div>
               </article>
             ))}
           </div>

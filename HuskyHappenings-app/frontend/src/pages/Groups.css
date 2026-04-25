@@ -171,6 +171,20 @@
   gap: 12px;
 }
 
+.group-status {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.group-status.pending {
+  color: #6b7280;
+}
+
+.group-status.joined {
+  color: #059669;
+}
+
 .group-avatar {
   width: 44px;
   height: 44px;

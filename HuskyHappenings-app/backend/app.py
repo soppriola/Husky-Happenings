@@ -38,11 +38,13 @@ def login_required(f):
 
         now = datetime.now(timezone.utc)
 
-        cursor.execute(
+        local_cursor = db.cursor(dictionary=True)
+        local_cursor.execute(
             "SELECT USER_ID FROM SESSIONS WHERE TOKEN = %s AND EXPIRES_AT > %s",
             (token, now)
         )
-        session_data = cursor.fetchone()
+        session_data = local_cursor.fetchone()
+        local_cursor.close()
 
         if not session_data:
             return jsonify({"error": "Invalid or expired session."}), 401
@@ -50,6 +52,7 @@ def login_required(f):
         g.user_id = session_data["USER_ID"]
 
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -190,7 +193,6 @@ def logout():
 
     response = jsonify({"message": "Logged out"})
     response.set_cookie("token", "", expires=0, secure=True, httponly=True, samesite="Lax")
-    return response, 200
 
 
 # This function returns information about logged in user
@@ -837,14 +839,364 @@ def mark_all_notifications_read():
 def health_check():
     return jsonify({"message": "Backend is running"}), 200
 
+# Create a new group and make the creator the owner
+# Author: Sophia Priola
+@app.post("/api/groups")
+@login_required
+def create_group():
+    data = request.get_json()
+    group_name = data.get("groupName", "").strip()
+    description = data.get("description", "").strip()
+    study_category = data.get("studyCategory", "").strip()
+    privacy_type = data.get("privacyType", "Public").strip()
+
+    if not group_name or not description or not study_category:
+        return jsonify({"error": "Please fill out all fields"}), 400
+
+    if privacy_type not in ["Public", "Private"]:
+        return jsonify({"error": "Privacy type must be Public or Private"}), 400
+
+    local_cursor = db.cursor(dictionary=True)
+
+    local_cursor.execute(
+        """
+        INSERT INTO HGroup
+        (CreatedByUserID, GroupName, StudyCategory, Description, PrivacyType)
+        VALUES (%s, %s, %s, %s, %s)
+        """,
+        (g.user_id, group_name, study_category, description, privacy_type)
+    )
+
+    group_id = local_cursor.lastrowid
+
+    local_cursor.execute(
+        """
+        INSERT INTO GroupMember
+        (GroupID, UserID, RoleType, MembershipStatus, JoinedAt)
+        VALUES (%s, %s, 'Owner', 'Accepted', NOW())
+        """,
+        (group_id, g.user_id)
+    )
+
+    db.commit()
+    local_cursor.close()
+
+    return jsonify({"message": "Group created successfully", "groupId": group_id}), 201
+
+
+# Get groups the current user is already in
+# Author: Sophia Priola
+@app.get("/api/groups/my")
+@login_required
+def get_my_groups_page():
+    local_cursor = db.cursor(dictionary=True)
+
+    local_cursor.execute(
+        """
+        SELECT
+            hg.GroupID,
+            hg.GroupName,
+            hg.StudyCategory,
+            hg.Description,
+            hg.PrivacyType,
+            gm.RoleType,
+            gm.MembershipStatus
+        FROM GroupMember gm
+        JOIN HGroup hg
+            ON gm.GroupID = hg.GroupID
+        WHERE gm.UserID = %s
+          AND gm.MembershipStatus = 'Accepted'
+          AND hg.IsActive = TRUE
+        ORDER BY hg.GroupName ASC
+        """,
+        (g.user_id,)
+    )
+
+    groups = local_cursor.fetchall()
+    local_cursor.close()
+
+    return jsonify(groups), 200
+
+
+# Search existing groups by title or category
+# Author: Sophia Priola
+@app.get("/api/groups/search")
+@login_required
+def search_groups():
+    query = request.args.get("q", "").strip()
+
+    if not query:
+        return jsonify([]), 200
+
+    local_cursor = db.cursor(dictionary=True)
+
+    local_cursor.execute(
+        """
+        SELECT
+            hg.GroupID,
+            hg.GroupName,
+            hg.StudyCategory,
+            hg.Description,
+            hg.PrivacyType,
+            gm.MembershipStatus AS CurrentUserStatus
+        FROM HGroup hg
+        LEFT JOIN GroupMember gm
+            ON hg.GroupID = gm.GroupID
+           AND gm.UserID = %s
+        WHERE hg.IsActive = TRUE
+          AND (
+            hg.GroupName LIKE %s
+            OR hg.StudyCategory LIKE %s
+          )
+        ORDER BY hg.GroupName ASC
+        """,
+        (g.user_id, f"%{query}%", f"%{query}%")
+    )
+
+    groups = local_cursor.fetchall()
+    local_cursor.close()
+
+    return jsonify(groups), 200
+
+
+# Join a public group or request to join a private group
+# Author: Sophia Priola
+# Join a public group or request to join a private group
+# Author: Sophia Priola
+@app.post("/api/groups/<int:group_id>/join")
+@login_required
+def join_group(group_id):
+    local_cursor = db.cursor(dictionary=True)
+
+    local_cursor.execute(
+        """
+        SELECT GroupID, GroupName, PrivacyType, CreatedByUserID
+        FROM HGroup
+        WHERE GroupID = %s AND IsActive = TRUE
+        """,
+        (group_id,)
+    )
+    group = local_cursor.fetchone()
+
+    if not group:
+        local_cursor.close()
+        return jsonify({"error": "Group not found"}), 404
+
+    local_cursor.execute(
+        """
+        SELECT MembershipStatus
+        FROM GroupMember
+        WHERE GroupID = %s AND UserID = %s
+        """,
+        (group_id, g.user_id)
+    )
+    existing = local_cursor.fetchone()
+
+    if existing:
+        status = existing["MembershipStatus"]
+        local_cursor.close()
+
+        if status == "Accepted":
+            return jsonify({"message": "Already a member of this group"}), 200
+
+        if status == "Pending":
+            return jsonify({"message": "Join request already pending"}), 200
+
+        return jsonify({"message": f"Current membership status: {status}"}), 200
+
+    if group["PrivacyType"] == "Public":
+        local_cursor.execute(
+            """
+            INSERT INTO GroupMember
+            (GroupID, UserID, RoleType, MembershipStatus, JoinedAt)
+            VALUES (%s, %s, 'Member', 'Accepted', NOW())
+            """,
+            (group_id, g.user_id)
+        )
+
+        db.commit()
+        local_cursor.close()
+
+        return jsonify({"message": "Joined group successfully"}), 201
+
+    local_cursor.execute(
+        """
+        INSERT INTO GroupMember
+        (GroupID, UserID, RoleType, MembershipStatus)
+        VALUES (%s, %s, 'Member', 'Pending')
+        """,
+        (group_id, g.user_id)
+    )
+
+    db.commit()
+    local_cursor.close()
+
+    create_notification(
+        recipient_user_id=group["CreatedByUserID"],
+        trigger_user_id=g.user_id,
+        notification_type="group_request",
+        message=f'Someone requested to join {group["GroupName"]}',
+        related_post_id=None
+    )
+
+    return jsonify({"message": "Join request sent"}), 201
+
+# Get pending requests for a group
+# Author: Sophia Priola
+@app.get("/api/groups/<int:group_id>/requests")
+@login_required
+def get_group_requests(group_id):
+    local_cursor = db.cursor(dictionary=True)
+
+    local_cursor.execute(
+        """
+        SELECT 1
+        FROM GroupMember
+        WHERE GroupID = %s
+          AND UserID = %s
+          AND RoleType = 'Owner'
+          AND MembershipStatus = 'Accepted'
+        """,
+        (group_id, g.user_id)
+    )
+    owner = local_cursor.fetchone()
+
+    if not owner:
+        local_cursor.close()
+        return jsonify({"error": "Only the group owner can view requests"}), 403
+
+    local_cursor.execute(
+        """
+        SELECT
+            gm.UserID,
+            u.USERNAME,
+            u.NAME,
+            gm.CreatedAt
+        FROM GroupMember gm
+        JOIN USERS u
+            ON gm.UserID = u.USER_ID
+        WHERE gm.GroupID = %s
+          AND gm.MembershipStatus = 'Pending'
+        ORDER BY gm.CreatedAt ASC
+        """,
+        (group_id,)
+    )
+
+    requests = local_cursor.fetchall()
+    local_cursor.close()
+
+    return jsonify(requests), 200
+
+# Approve a pending request
+# Author: Sophia Priola
+@app.post("/api/groups/<int:group_id>/requests/<int:user_id>/approve")
+@login_required
+def approve_group_request(group_id, user_id):
+    local_cursor = db.cursor(dictionary=True)
+
+    local_cursor.execute(
+        """
+        SELECT 1
+        FROM GroupMember
+        WHERE GroupID = %s
+          AND UserID = %s
+          AND RoleType = 'Owner'
+          AND MembershipStatus = 'Accepted'
+        """,
+        (group_id, g.user_id)
+    )
+    owner = local_cursor.fetchone()
+
+    if not owner:
+        local_cursor.close()
+        return jsonify({"error": "Only the group owner can approve requests"}), 403
+
+    local_cursor.execute(
+        """
+        UPDATE GroupMember
+        SET MembershipStatus = 'Accepted',
+            JoinedAt = NOW()
+        WHERE GroupID = %s
+          AND UserID = %s
+          AND MembershipStatus = 'Pending'
+        """,
+        (group_id, user_id)
+    )
+
+    if local_cursor.rowcount == 0:
+        local_cursor.close()
+        return jsonify({"error": "Pending request not found"}), 404
+
+    db.commit()
+    local_cursor.close()
+
+    create_notification(
+        recipient_user_id=user_id,
+        trigger_user_id=g.user_id,
+        notification_type="group_approved",
+        message="Your group request was approved",
+        related_post_id=None
+    )
+
+    return jsonify({"message": "Request approved"}), 200
+
+# Decline a pending request
+# Author: Sophia Priola
+@app.post("/api/groups/<int:group_id>/requests/<int:user_id>/decline")
+@login_required
+def decline_group_request(group_id, user_id):
+    local_cursor = db.cursor(dictionary=True)
+
+    local_cursor.execute(
+        """
+        SELECT 1
+        FROM GroupMember
+        WHERE GroupID = %s
+          AND UserID = %s
+          AND RoleType = 'Owner'
+          AND MembershipStatus = 'Accepted'
+        """,
+        (group_id, g.user_id)
+    )
+    owner = local_cursor.fetchone()
+
+    if not owner:
+        local_cursor.close()
+        return jsonify({"error": "Only the group owner can decline requests"}), 403
+
+    local_cursor.execute(
+        """
+        UPDATE GroupMember
+        SET MembershipStatus = 'Declined'
+        WHERE GroupID = %s
+          AND UserID = %s
+          AND MembershipStatus = 'Pending'
+        """,
+        (group_id, user_id)
+    )
+
+    if local_cursor.rowcount == 0:
+        local_cursor.close()
+        return jsonify({"error": "Pending request not found"}), 404
+
+    db.commit()
+    local_cursor.close()
+
+    create_notification(
+        recipient_user_id=user_id,
+        trigger_user_id=g.user_id,
+        notification_type="group_declined",
+        message="Your group request was declined",
+        related_post_id=None
+    )
+
+    return jsonify({"message": "Request declined"}), 200
+
 if __name__ == "__main__":
     app.run(
         host="localhost",
         port=5000,
         debug=True,
         ssl_context="adhoc"
-    )
-        ssl_context=(os.getenv('FRONTEND_CERT_PATH'), os.getenv('FRONTEND_KEY_PATH')),
-        debug=True
     )
     
