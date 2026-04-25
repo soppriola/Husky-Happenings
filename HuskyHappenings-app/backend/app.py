@@ -210,7 +210,7 @@ def create_conversation():
         if not otherUsers or len(otherUsers) == 0:
             return jsonify({"error": "At least one user must be selected"}), 400
 
-        cursor.execute("INSERT INTO CONVERSATIONS (NAME) VALUES (%s)", (conversationName,))
+        cursor.execute("INSERT INTO CONVERSATIONS (CONVERSATION_NAME) VALUES (%s)", (conversationName,))
         conversation_id = cursor.lastrowid
 
         cursor.execute(
@@ -242,7 +242,7 @@ def get_conversations():
     cursor.execute("""
         SELECT
             c.CONVERSATION_ID AS conversation_id,
-            c.NAME AS conversation_name,
+            c.CONVERSATION_NAME AS conversation_name,
             COALESCE(m.CONTENT, '') AS latest_message,
             COALESCE(m.TIMESTAMP, c.CREATED_AT) AS latest_time
         FROM CONVERSATION_MEMBERS cm1
@@ -261,7 +261,7 @@ def get_conversations():
         ) m
             ON c.CONVERSATION_ID = m.CONVERSATION_ID
         WHERE cm1.USER_ID = %s
-        GROUP BY c.CONVERSATION_ID, c.NAME, m.CONTENT, m.TIMESTAMP, c.CREATED_AT
+        GROUP BY c.CONVERSATION_ID, c.CONVERSATION_NAME, m.CONTENT, m.TIMESTAMP, c.CREATED_AT
         ORDER BY latest_time DESC
     """, (g.user_id,))
 
@@ -540,34 +540,6 @@ def handle_send_message(data):
 
     socketio.emit("receive_message", message_data, room=str(conversation_id))
     return True
-
-@app.post("/api/conversations")
-@login_required
-def create_conversation():
-    data = request.get_json()
-    user_id = g.user_id
-    other_users = data.get("otherUsers")
-    conversation_name = data.get("conversationName")
-
-    cursor.execute(
-        "INSERT INTO CONVERSATIONS (NAME) VALUES (%s)",
-        (conversation_name,)
-    )
-    conversation = cursor.lastrowid
-
-    cursor.execute(
-        "INSERT INTO CONVERSATION_MEMBERS (CONVERSATION_ID, USER_ID) VALUES (%s, %s)",
-        (conversation, user_id)
-    )
-
-    for each in other_users:
-        cursor.execute(
-            "INSERT INTO CONVERSATION_MEMBERS (CONVERSATION_ID, USER_ID) VALUES (%s, %s)",
-            (conversation, each)
-        )
-
-    db.commit()
-    return jsonify({"message": "Conversation created"}), 201
 
 
 @app.get("/api/profile/<int:user_id>")
