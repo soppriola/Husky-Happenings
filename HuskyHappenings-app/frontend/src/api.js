@@ -5,15 +5,16 @@ async function handleResponse(response) {
   return data;
 }
 
+// Author: Arianna Kelsey
 export async function fetchEvents() {
-  const response = await fetch("https://localhost:5000/api/events", {
+  const response = await fetch("http://localhost:5000/api/events", {
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function createEvent(formData) {
-  const response = await fetch("https://localhost:5000/api/events", {
+  const response = await fetch("http://localhost:5000/api/events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -21,9 +22,9 @@ export async function createEvent(formData) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function updateEvent(id, formData) {
-  const response = await fetch(`https://localhost:5000/api/events/${id}`, {
+  const response = await fetch(`http://localhost:5000/api/events/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -31,9 +32,9 @@ export async function updateEvent(id, formData) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function cancelEvent(id, cancellationReason) {
-  const response = await fetch(`https://localhost:5000/api/events/${id}/cancel`, {
+  const response = await fetch(`http://localhost:5000/api/events/${id}/cancel`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -41,17 +42,17 @@ export async function cancelEvent(id, cancellationReason) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function deleteEvent(id) {
-  const response = await fetch(`https://localhost:5000/api/events/${id}`, {
+  const response = await fetch(`http://localhost:5000/api/events/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function registerForEvent(id, rsvpStatus) {
-  const response = await fetch(`https://localhost:5000/api/events/${id}/register`, {
+  const response = await fetch(`http://localhost:5000/api/events/${id}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -59,9 +60,9 @@ export async function registerForEvent(id, rsvpStatus) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function updateEventRegistration(id, rsvpStatus, registrationStatus = "Responded") {
-  const response = await fetch(`https://localhost:5000/api/events/${id}/register`, {
+  const response = await fetch(`http://localhost:5000/api/events/${id}/register`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -69,16 +70,23 @@ export async function updateEventRegistration(id, rsvpStatus, registrationStatus
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function fetchJobs() {
-  const response = await fetch("https://localhost:5000/api/jobs", {
+  const response = await fetch("http://localhost:5000/api/jobs", {
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
+export async function fetchMyJobApplications() {
+  const response = await fetch("http://localhost:5000/api/my-job-applications", {
+    credentials: "include",
+  });
+  return response.json();
+}
+// Author: Arianna Kelsey
 export async function createJob(formData) {
-  const response = await fetch("https://localhost:5000/api/jobs", {
+  const response = await fetch("http://localhost:5000/api/jobs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -86,9 +94,9 @@ export async function createJob(formData) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function updateJob(id, formData) {
-  const response = await fetch(`https://localhost:5000/api/jobs/${id}`, {
+  const response = await fetch(`http://localhost:5000/api/jobs/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -96,25 +104,25 @@ export async function updateJob(id, formData) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function closeJob(id) {
-  const response = await fetch(`https://localhost:5000/api/jobs/${id}/close`, {
+  const response = await fetch(`http://localhost:5000/api/jobs/${id}/close`, {
     method: "PUT",
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function deleteJob(id) {
-  const response = await fetch(`https://localhost:5000/api/jobs/${id}`, {
+  const response = await fetch(`http://localhost:5000/api/jobs/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function applyToJob(id, coverLetter, resumeURL) {
-  const response = await fetch(`https://localhost:5000/api/jobs/${id}/apply`, {
+  const response = await fetch(`http://localhost:5000/api/jobs/${id}/apply`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -122,9 +130,9 @@ export async function applyToJob(id, coverLetter, resumeURL) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function updateJobApplicationStatus(applicationId, applicationStatus) {
-  const response = await fetch(`https://localhost:5000/api/job-applications/${applicationId}`, {
+  const response = await fetch(`http://localhost:5000/api/job-applications/${applicationId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -132,16 +140,24 @@ export async function updateJobApplicationStatus(applicationId, applicationStatu
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
+export async function deleteJobApplication(applicationId) {
+  const response = await fetch(`http://localhost:5000/api/job-applications/${applicationId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return response.json();
+}
+// Author: Arianna Kelsey
 export async function fetchMentorships() {
-  const response = await fetch("https://localhost:5000/api/mentorships", {
+  const response = await fetch("http://localhost:5000/api/mentorships", {
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function createMentorship(formData) {
-  const response = await fetch("https://localhost:5000/api/mentorships", {
+  const response = await fetch("http://localhost:5000/api/mentorships", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -149,9 +165,9 @@ export async function createMentorship(formData) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function updateMentorship(id, formData) {
-  const response = await fetch(`https://localhost:5000/api/mentorships/${id}`, {
+  const response = await fetch(`http://localhost:5000/api/mentorships/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -159,32 +175,39 @@ export async function updateMentorship(id, formData) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function deactivateMentorship(id) {
-  const response = await fetch(`https://localhost:5000/api/mentorships/${id}/deactivate`, {
+  const response = await fetch(`http://localhost:5000/api/mentorships/${id}/deactivate`, {
     method: "PUT",
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function deleteMentorship(id) {
-  const response = await fetch(`https://localhost:5000/api/mentorships/${id}`, {
+  const response = await fetch(`http://localhost:5000/api/mentorships/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function fetchMentorRequests() {
-  const response = await fetch("https://localhost:5000/api/mentorship-requests", {
+  const response = await fetch("http://localhost:5000/api/mentorship-requests", {
     credentials: "include",
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
+export async function fetchMyMentorshipRequests() {
+  const response = await fetch("http://localhost:5000/api/my-mentorship-requests", {
+    credentials: "include",
+  });
+  return response.json();
+}
+// Author: Arianna Kelsey
 export async function createMentorRequest(formData) {
-  const response = await fetch("https://localhost:5000/api/mentorship-requests", {
+  const response = await fetch("http://localhost:5000/api/mentorship-requests", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -192,9 +215,9 @@ export async function createMentorRequest(formData) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function updateMentorRequest(formData) {
-  const response = await fetch("https://localhost:5000/api/mentorship-requests", {
+  const response = await fetch("http://localhost:5000/api/mentorship-requests", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -202,9 +225,9 @@ export async function updateMentorRequest(formData) {
   });
   return response.json();
 }
-
+// Author: Arianna Kelsey
 export async function deleteMentorRequest(formData) {
-  const response = await fetch("https://localhost:5000/api/mentorship-requests", {
+  const response = await fetch("http://localhost:5000/api/mentorship-requests", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -212,3 +235,4 @@ export async function deleteMentorRequest(formData) {
   });
   return response.json();
 }
+
