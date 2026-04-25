@@ -18,6 +18,7 @@ const emptyForm = {
   startDateTime: "",
   endDateTime: "",
   privacyType: "Public",
+  groupID: "",
 };
 
 function toDateTimeLocal(value) {
@@ -32,49 +33,108 @@ function toDateTimeLocal(value) {
   return `${datePart}T${hour}:${minute}`;
 }
 
+function normalizeEvents(data) {
+  if (!Array.isArray(data)) return [];
+
+  return data.map((event) => ({
+    ...event,
+    createdBy:
+      event.createdBy ??
+      event.CreatedByUserID ??
+      event.created_by ??
+      event.creatorID ??
+      "",
+    groupID: event.groupID ?? event.GroupID ?? "",
+  }));
+}
+
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [message, setMessage] = useState("");
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
+    loadCurrentUser();
+    loadGroups();
     loadEvents();
   }, []);
 
-  useEffect(() => {
-  fetch("http://127.0.0.1:5000/api/me", {
-    credentials: "include",
-  })
-    .then(res => res.json())
-    .then(data => setCurrentUserId(data.user_id));
-}, []);
+  async function loadCurrentUser() {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/me", {
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      setCurrentUserId(data.user_id ?? data.USER_ID ?? data.id ?? null);
+    } catch (err) {
+      console.error("Failed to load current user:", err);
+      setCurrentUserId(null);
+    }
+  }
+
+  async function loadGroups() {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/my-groups", {
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      setGroups(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load groups:", err);
+      setGroups([]);
+    }
+  }
 
   async function loadEvents() {
-    const data = await fetchEvents();
-    if (Array.isArray(data)) {
-      setEvents(data);
-    } else {
+    try {
+      const data = await fetchEvents();
+
+      if (Array.isArray(data)) {
+        setEvents(normalizeEvents(data));
+      } else if (Array.isArray(data?.events)) {
+        setEvents(normalizeEvents(data.events));
+      } else {
+        console.warn("Unexpected events response:", data);
+        setEvents([]);
+      }
+    } catch (error) {
+      console.error("Failed to load events:", error);
       setEvents([]);
+      setMessage("Backend connection error.");
     }
   }
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+
+      if (name === "privacyType" && value === "Public") {
+        updated.groupID = "";
+      }
+
+      return updated;
+    });
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
     setMessage("");
 
-    let result;
-    if (editingId) {
-      result = await updateEvent(editingId, formData);
-    } else {
-      result = await createEvent(formData);
+    if (formData.privacyType === "Private" && !formData.groupID) {
+      setMessage("Private events must be assigned to a group.");
+      return;
     }
+
+    const result = editingId
+      ? await updateEvent(editingId, formData)
+      : await createEvent(formData);
 
     if (result.error) {
       setMessage(result.error);
@@ -84,7 +144,7 @@ export default function EventsPage() {
     setMessage(editingId ? "Event updated successfully." : "Event created successfully.");
     setFormData(emptyForm);
     setEditingId(null);
-    loadEvents();
+    await loadEvents();
   }
 
   function handleEdit(eventItem) {
@@ -96,46 +156,57 @@ export default function EventsPage() {
       startDateTime: toDateTimeLocal(eventItem.startDateTime),
       endDateTime: toDateTimeLocal(eventItem.endDateTime),
       privacyType: eventItem.privacyType || "Public",
+      groupID: eventItem.groupID || eventItem.GroupID || "",
     });
     setMessage(`Editing event: ${eventItem.title}`);
   }
 
   async function handleCancelEvent(id) {
     const result = await cancelEvent(id, "Cancelled from website");
+
     if (result.error) {
       setMessage(result.error);
       return;
     }
+
     setMessage("Event cancelled successfully.");
-    loadEvents();
+    await loadEvents();
   }
 
   async function handleDeleteEvent(id) {
     const result = await deleteEvent(id);
+
     if (result.error) {
       setMessage(result.error);
       return;
     }
+
     setMessage("Event deleted successfully.");
-    loadEvents();
+    await loadEvents();
   }
 
   async function handleRegister(id, status) {
     const result = await registerForEvent(id, status);
+
     if (result.error) {
       setMessage(result.error);
       return;
     }
+
     setMessage("Event registration created successfully.");
+    await loadEvents();
   }
 
   async function handleUpdateRSVP(id, status) {
     const result = await updateEventRegistration(id, status, "Responded");
+
     if (result.error) {
       setMessage(result.error);
       return;
     }
+
     setMessage("RSVP updated successfully.");
+    await loadEvents();
   }
 
   function handleClearEdit() {
@@ -153,16 +224,20 @@ export default function EventsPage() {
 
       <section className="events-section">
         <h2>{editingId ? "Edit Event" : "Create Event"}</h2>
+
         <CreateEventForm
           formData={formData}
           onChange={handleChange}
           onSubmit={handleSubmit}
+          groups={groups}
         />
+
         {editingId && (
           <button type="button" onClick={handleClearEdit} className="refresh-button">
             Cancel Edit
           </button>
         )}
+
         {message && <p className="events-message">{message}</p>}
       </section>
 
@@ -173,6 +248,7 @@ export default function EventsPage() {
             Refresh
           </button>
         </div>
+
         <EventList
           events={events}
           currentUserId={currentUserId}
