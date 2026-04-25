@@ -12,8 +12,8 @@ import secrets
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["https://localhost:5173"])
-socketio = SocketIO(app, cors_allowed_origins="https://localhost:5173")
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
 
 
 # Connects the backend to the MySQL database
@@ -149,7 +149,7 @@ def login():
         "token",
         token,
         expires=expires_at,
-        secure=True,
+        secure=False,
         httponly=True,
         samesite="Lax"
     )
@@ -174,7 +174,7 @@ def logout():
         db.commit()
 
     response = jsonify({"message": "Logged out"})
-    response.set_cookie("token", "", expires=0, secure=True, httponly=True, samesite="Lax")
+    response.set_cookie("token", "", expires=0, secure=False, httponly=True, samesite="Lax")
     return response, 200
 
 
@@ -396,6 +396,34 @@ def handle_send_message(data):
 
     socketio.emit("receive_message", message_data, room=str(conversation_id))
     return True
+
+@app.post("/api/conversations")
+@login_required
+def create_conversation():
+    data = request.get_json()
+    user_id = g.user_id
+    other_users = data.get("otherUsers")
+    conversation_name = data.get("conversationName")
+
+    cursor.execute(
+        "INSERT INTO CONVERSATIONS (NAME) VALUES (%s)",
+        (conversation_name,)
+    )
+    conversation = cursor.lastrowid
+
+    cursor.execute(
+        "INSERT INTO CONVERSATION_MEMBERS (CONVERSATION_ID, USER_ID) VALUES (%s, %s)",
+        (conversation, user_id)
+    )
+
+    for each in other_users:
+        cursor.execute(
+            "INSERT INTO CONVERSATION_MEMBERS (CONVERSATION_ID, USER_ID) VALUES (%s, %s)",
+            (conversation, each)
+        )
+
+    db.commit()
+    return jsonify({"message": "Conversation created"}), 201
 
 
 @app.get("/api/profile/<int:user_id>")
@@ -2070,6 +2098,5 @@ if __name__ == "__main__":
         app,
         host="localhost",
         port=5000,
-        debug=True,
-        ssl_context="adhoc"
+        debug=True
     )
