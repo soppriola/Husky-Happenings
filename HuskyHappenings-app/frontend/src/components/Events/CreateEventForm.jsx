@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function CreateEventForm({ formData, onChange, onSubmit }) {
+export default function CreateEventForm({ formData, onChange, onSubmit, groups = [] }) {
   return (
     <form className="event-form-grid" onSubmit={onSubmit}>
       <input
@@ -32,7 +32,7 @@ export default function CreateEventForm({ formData, onChange, onSubmit }) {
             type="datetime-local"
             name="startDateTime"
             value={formData.startDateTime}
-            min={new Date().toISOString().slice(0,16)}
+            min={new Date().toISOString().slice(0, 16)}
             onChange={onChange}
           />
         </div>
@@ -43,7 +43,7 @@ export default function CreateEventForm({ formData, onChange, onSubmit }) {
             type="datetime-local"
             name="endDateTime"
             value={formData.endDateTime}
-            min={new Date().toISOString().slice(0,16)} 
+            min={new Date().toISOString().slice(0, 16)}
             onChange={onChange}
           />
         </div>
@@ -60,6 +60,24 @@ export default function CreateEventForm({ formData, onChange, onSubmit }) {
             <option value="Public">Public</option>
             <option value="Private">Private</option>
           </select>
+
+          {formData.privacyType === "Private" && (
+            <>
+              <label>Group Access</label>
+              <select
+                name="groupID"
+                value={formData.groupID || ""}
+                onChange={onChange}
+              >
+                <option value="">Select a Group</option>
+                {groups.map((g) => (
+                  <option key={g.GroupID} value={g.GroupID}>
+                    {g.GroupName}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
 
         <div className="event-button-wrap">
