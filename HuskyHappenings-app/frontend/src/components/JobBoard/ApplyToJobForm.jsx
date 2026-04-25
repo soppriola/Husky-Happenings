@@ -7,7 +7,7 @@ export default function ApplyToJobForm({ jobId, onSubmit, onCancel }) {
   function handleSubmit(event) {
     event.preventDefault();
 
-    if (!coverLetter.trim() || !resumeURL.trim()) {
+    if (!coverLetter.trim()) {
       return;
     }
 
@@ -29,7 +29,7 @@ export default function ApplyToJobForm({ jobId, onSubmit, onCancel }) {
       <input
         className="job-apply-input"
         type="text"
-        placeholder="Paste your resume URL..."
+        placeholder="Optional resume URL..."
         value={resumeURL}
         onChange={(e) => setResumeURL(e.target.value)}
       />
