@@ -28,7 +28,7 @@ export default function Notifications() {
   const markAsRead = async (notificationId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/notifications/${notificationId}/read`,
+        `https://localhost:5000/api/notifications/${notificationId}/read`,
         {
           method: "POST",
           credentials: "include",
@@ -50,7 +50,7 @@ export default function Notifications() {
   const markAllAsRead = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/notifications/read-all",
+        "https://localhost:5000/api/notifications/read-all",
         {
           method: "POST",
           credentials: "include",
@@ -72,7 +72,7 @@ export default function Notifications() {
   const handleGroupRequest = async (notification, action) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/groups/${notification.RelatedGroupID}/requests/${notification.TriggerUserID}/${action}`,
+        `https://localhost:5000/api/groups/${notification.RelatedGroupID}/requests/${notification.TriggerUserID}/${action}`,
         {
           method: "POST",
           credentials: "include",
