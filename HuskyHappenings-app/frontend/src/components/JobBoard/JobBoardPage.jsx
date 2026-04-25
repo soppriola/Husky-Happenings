@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import {
   fetchJobs,
+  fetchMyJobApplications,
   createJob,
   updateJob,
   closeJob,
   deleteJob,
   applyToJob,
   updateJobApplicationStatus,
+  deleteJobApplication,
 } from "../../api";
 import CreateJobForm from "./CreateJobForm";
 import JobList from "./JobList";
@@ -35,14 +37,39 @@ function toDateTimeLocal(value) {
   return `${datePart}T${hour}:${minute}`;
 }
 
+function formatDateTime(value) {
+  if (!value) return "N/A";
+
+  const raw = String(value).replace("T", " ");
+  const [datePart, timePartRaw] = raw.split(" ");
+
+  if (!datePart || !timePartRaw) return value;
+
+  const [year, month, day] = datePart.split("-");
+  const [hourStr, minuteStr] = timePartRaw.split(":");
+
+  let hour = Number(hourStr);
+  const minute = minuteStr ?? "00";
+
+  if (Number.isNaN(hour)) return value;
+
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+
+  return `${month}/${day}/${year}, ${hour}:${minute} ${ampm}`;
+}
+
 export default function JobBoardPage() {
   const [jobs, setJobs] = useState([]);
+  const [myApplications, setMyApplications] = useState([]);
   const [message, setMessage] = useState("");
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     loadJobs();
+    loadMyApplications();
   }, []);
 
   async function loadJobs() {
@@ -54,21 +81,38 @@ export default function JobBoardPage() {
     }
   }
 
+  async function loadMyApplications() {
+    const data = await fetchMyJobApplications();
+    if (Array.isArray(data)) {
+      setMyApplications(data);
+    } else {
+      setMyApplications([]);
+    }
+  }
+
   function handleChange(event) {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      applicationMethod: "Email",
+      applicationURL: "",
+    }));
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
     setMessage("");
 
-    let result;
-    if (editingId) {
-      result = await updateJob(editingId, formData);
-    } else {
-      result = await createJob(formData);
-    }
+    const payload = {
+      ...formData,
+      applicationMethod: "Email",
+      applicationURL: "",
+    };
+
+    const result = editingId
+      ? await updateJob(editingId, payload)
+      : await createJob(payload);
 
     if (result.error) {
       setMessage(result.error);
@@ -78,7 +122,7 @@ export default function JobBoardPage() {
     setMessage(editingId ? "Job updated successfully." : "Job posted successfully.");
     setFormData(emptyForm);
     setEditingId(null);
-    loadJobs();
+    await loadJobs();
   }
 
   function handleEdit(job) {
@@ -88,9 +132,9 @@ export default function JobBoardPage() {
       company: job.company || "",
       location: job.location || "",
       description: job.description || "",
-      applicationMethod: job.applicationMethod || "Email",
+      applicationMethod: "Email",
       contactEmail: job.contactEmail || "",
-      applicationURL: job.applicationURL || "",
+      applicationURL: "",
       deadline: toDateTimeLocal(job.deadline),
       status: job.status || "Active",
     });
@@ -104,7 +148,7 @@ export default function JobBoardPage() {
       return;
     }
     setMessage("Job closed successfully.");
-    loadJobs();
+    await loadJobs();
   }
 
   async function handleDeleteJob(id) {
@@ -114,7 +158,7 @@ export default function JobBoardPage() {
       return;
     }
     setMessage("Job deleted successfully.");
-    loadJobs();
+    await loadJobs();
   }
 
   async function handleApply(id, coverLetter, resumeURL) {
@@ -124,6 +168,8 @@ export default function JobBoardPage() {
       return;
     }
     setMessage("Applied to job successfully.");
+    await loadJobs();
+    await loadMyApplications();
   }
 
   async function handleUpdateApplicationStatus(applicationId, status) {
@@ -133,7 +179,22 @@ export default function JobBoardPage() {
       return;
     }
     setMessage("Job application status updated successfully.");
+    await loadJobs();
+    await loadMyApplications();
   }
+
+  async function handleDeleteApplication(applicationId) {
+  const result = await deleteJobApplication(applicationId);
+
+  if (result.error) {
+    setMessage(result.error);
+    return;
+  }
+
+  setMessage("Application deleted successfully.");
+  await loadJobs();
+  await loadMyApplications();
+}
 
   function handleClearEdit() {
     setEditingId(null);
@@ -165,6 +226,27 @@ export default function JobBoardPage() {
 
       <section className="jobs-section">
         <div className="jobs-list-header">
+          <h2>Recent Applications</h2>
+        </div>
+
+        {!myApplications || myApplications.length === 0 ? (
+          <p className="empty-state">You have not applied to any jobs yet.</p>
+        ) : (
+          <div className="job-card-grid">
+            {myApplications.map((application) => (
+              <div className="job-card" key={application.applicationId}>
+                <h3>{application.jobTitle}</h3>
+                <p className="job-company">{application.company}</p>
+                <p><strong>Status:</strong> {application.applicationStatus}</p>
+                <p><strong>Applied:</strong> {formatDateTime(application.appliedAt)}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="jobs-section">
+        <div className="jobs-list-header">
           <h2>Available Jobs</h2>
           <button type="button" onClick={loadJobs} className="refresh-button">
             Refresh
@@ -177,6 +259,7 @@ export default function JobBoardPage() {
           onDelete={handleDeleteJob}
           onApply={handleApply}
           onUpdateApplicationStatus={handleUpdateApplicationStatus}
+          onDeleteApplication={handleDeleteApplication}
         />
       </section>
     </div>

@@ -12,429 +12,354 @@
 /* Arianna Styles            */
 /* ========================= */
 
-.app-shell {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.tab-nav {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.feature-form input,
-.feature-form textarea,
-.feature-form select {
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.events-page {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.events-header {
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.events-section {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.events-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.event-form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.event-form-grid input,
-.event-form-grid textarea,
-.event-form-grid select {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #666;
-  background: #2f2f2f;
-  color: white;
-}
-
-.event-form-grid label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.95rem;
-}
-
-.event-form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.event-button-wrap {
-  display: flex;
-  align-items: end;
-}
-
-.primary-button,
-.refresh-button {
-  padding: 12px 16px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.primary-button {
-  width: 100%;
-}
-
-.events-message {
-  margin-top: 12px;
-  color: #7CFC98;
-  font-weight: 600;
-}
-
-.event-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-.event-card {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.event-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.event-card-top h3 {
+.app-shell,
+.events-page,
+.jobs-page,
+.mentorship-page {
+  min-height: 100vh;
+  padding: 36px;
+  max-width: none;
   margin: 0;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 32%),
+    linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
 }
 
-.event-badge {
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #444;
-  font-size: 0.85rem;
-}
-
-.event-description {
-  margin-bottom: 14px;
-  color: #d0d0d0;
-}
-
-.event-meta p {
-  margin: 6px 0;
-}
-
-.empty-state {
-  color: #cfcfcf;
-  font-style: italic;
-}
-
-@media (max-width: 768px) {
-  .event-form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .events-list-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-} 
-
-.jobs-page {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.jobs-header {
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.jobs-section {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.jobs-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.job-form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.job-form-grid input,
-.job-form-grid textarea,
-.job-form-grid select {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #666;
-  background: #2f2f2f;
-  color: white;
-}
-
-.job-form-grid label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.95rem;
-}
-
-.job-form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.job-button-wrap {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.jobs-message {
-  margin-top: 12px;
-  color: #7CFC98;
-  font-weight: 600;
-}
-
-.job-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-.job-card {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.job-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.job-card-top h3 {
-  margin: 0 0 4px 0;
-}
-
-.job-company {
-  margin: 0;
-  color: #cfcfcf;
-}
-
-.job-badge {
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #444;
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
-.job-description {
-  margin-bottom: 14px;
-  color: #d0d0d0;
-}
-
-.job-meta p {
-  margin: 6px 0;
-}
-
-@media (max-width: 768px) {
-  .job-form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .jobs-list-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-}
- .mentorship-page {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
+.events-header,
+.jobs-header,
 .mentorship-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
+.events-header h1,
+.jobs-header h1,
+.mentorship-header h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-weight: 900;
+}
+
+.events-header p,
+.jobs-header p,
+.mentorship-header p {
+  max-width: 720px;
+  margin: 16px auto 0;
+  color: #64748b;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.events-section,
+.jobs-section,
 .mentorship-section {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 24px;
+  padding: 26px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(14px);
   margin-bottom: 24px;
 }
 
-.mentorship-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-
+.events-section h2,
+.jobs-section h2,
+.mentorship-section h2,
 .mentorship-panel h2 {
-  margin-top: 0;
-  margin-bottom: 16px;
+  margin: 0 0 22px;
+  color: #0f172a;
+  font-size: 1.45rem;
+  letter-spacing: -0.04em;
+  font-weight: 850;
 }
 
+.event-form-grid,
+.job-form-grid,
 .mentorship-form-grid {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+.event-form-row,
+.job-form-row,
+.mentorship-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.event-form-grid input,
+.event-form-grid textarea,
+.event-form-grid select,
+.job-form-grid input,
+.job-form-grid textarea,
+.job-form-grid select,
 .mentorship-form-grid input,
 .mentorship-form-grid textarea,
-.mentorship-form-grid select {
+.mentorship-form-grid select,
+.job-apply-input,
+.job-apply-textarea {
   width: 100%;
   box-sizing: border-box;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #666;
-  background: #2f2f2f;
-  color: white;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: white;
+  color: #0f172a;
+  font-size: 0.94rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
+.event-form-grid textarea,
+.job-form-grid textarea,
+.mentorship-form-grid textarea,
+.job-apply-textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.event-form-grid input:focus,
+.event-form-grid textarea:focus,
+.event-form-grid select:focus,
+.job-form-grid input:focus,
+.job-form-grid textarea:focus,
+.job-form-grid select:focus,
+.mentorship-form-grid input:focus,
+.mentorship-form-grid textarea:focus,
+.mentorship-form-grid select:focus,
+.job-apply-input:focus,
+.job-apply-textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.event-form-grid label,
+.job-form-grid label,
 .mentorship-form-grid label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 0.95rem;
+  margin-bottom: 7px;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
+.primary-button,
+.refresh-button,
+.event-action-row button,
+.job-action-row button,
+.mentorship-card button {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.2);
+}
+
+.refresh-button,
+.event-action-row button,
+.job-action-row button,
+.mentorship-card button {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.primary-button:hover,
+.refresh-button:hover,
+.event-action-row button:hover,
+.job-action-row button:hover,
+.mentorship-card button:hover {
+  transform: translateY(-1px);
+}
+
+.event-button-wrap,
+.job-button-wrap {
+  display: flex;
+  justify-content: flex-end;
+  align-items: end;
+}
+
+.events-message,
+.jobs-message,
 .mentorship-message {
-  margin-top: 16px;
-  color: #7CFC98;
-  font-weight: 600;
+  margin-top: 18px;
+  border-radius: 16px;
+  padding: 13px 15px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #bbf7d0;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
+.events-list-header,
+.jobs-list-header,
 .mentorship-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 22px;
 }
 
+.event-card-grid,
+.job-card-grid,
 .mentorship-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
 }
 
+.event-card,
+.job-card,
 .mentorship-card {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
   padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
+.event-card:hover,
+.job-card:hover,
+.mentorship-card:hover {
+  transform: translateY(-3px);
+  border-color: #bfdbfe;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.09);
+}
+
+.event-card-top,
+.job-card-top,
 .mentorship-card-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 12px;
 }
 
-.mentorship-card-top h3 {
+.event-card h3,
+.job-card h3,
+.mentorship-card h3 {
   margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 850;
+  letter-spacing: -0.03em;
 }
 
+.job-company {
+  margin: 3px 0 0;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.event-badge,
+.job-badge,
 .mentorship-badge {
-  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
   border-radius: 999px;
-  background: #444;
-  font-size: 0.85rem;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.74rem;
+  font-weight: 850;
   white-space: nowrap;
 }
 
+.event-description,
+.job-description,
 .mentorship-description {
-  color: #d0d0d0;
-  margin-top: 10px;
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.event-meta p,
+.job-meta p,
+.mentorship-card p {
+  margin: 6px 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.event-action-row,
+.job-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.job-apply-form {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.empty-state {
+  border: 1px dashed #cbd5e1;
+  border-radius: 22px;
+  padding: 32px;
+  text-align: center;
+  background: #f8fafc;
+  color: #64748b;
+  font-style: normal;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .events-page,
+  .jobs-page,
+  .mentorship-page {
+    padding: 22px;
+  }
+
+  .events-section,
+  .jobs-section,
+  .mentorship-section {
+    padding: 20px;
+    border-radius: 22px;
+  }
 }
 
 @media (max-width: 768px) {
+  .event-form-row,
+  .job-form-row,
   .mentorship-split {
     grid-template-columns: 1fr;
   }
 
+  .events-list-header,
+  .jobs-list-header,
   .mentorship-list-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-}
-.job-apply-form {
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.job-apply-textarea,
-.job-apply-input {
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: white;
-  font: inherit;
-  box-sizing: border-box;
-}
-
-.job-apply-textarea::placeholder,
-.job-apply-input::placeholder {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.job-apply-textarea:focus,
-.job-apply-input:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.28);
 }
 

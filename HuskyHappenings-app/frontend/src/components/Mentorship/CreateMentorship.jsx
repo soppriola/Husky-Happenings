@@ -1,8 +1,14 @@
 import React from "react";
 
-export default function CreateMentorship({ formData, onChange, onSubmit, isEditing }) {
+export default function CreateMentorship({
+  formData,
+  onChange,
+  onSubmit,
+  isEditing,
+}) {
   return (
     <form className="mentorship-form-grid" onSubmit={onSubmit}>
+      
       <input
         name="name"
         placeholder="Program name"
@@ -27,13 +33,16 @@ export default function CreateMentorship({ formData, onChange, onSubmit, isEditi
 
       <div>
         <label>Privacy Type</label>
+
         <select
           name="privacyType"
           value={formData.privacyType}
           onChange={onChange}
         >
           <option value="Public">Public</option>
-          <option value="Private">Private</option>
+          <option value="Private">
+            Private (Only visible to group members)
+          </option>
         </select>
       </div>
 

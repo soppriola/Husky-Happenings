@@ -36,15 +36,7 @@ export default function CreateJobForm({ formData, onChange, onSubmit }) {
       <div className="job-form-row">
         <div>
           <label>Application Method</label>
-          <select
-            name="applicationMethod"
-            value={formData.applicationMethod}
-            onChange={onChange}
-          >
-            <option value="Email">Email</option>
-            <option value="External Link">External Link</option>
-            <option value="Platform">Platform</option>
-          </select>
+          <input value="Email" disabled />
         </div>
 
         <div>
@@ -58,23 +50,12 @@ export default function CreateJobForm({ formData, onChange, onSubmit }) {
         </div>
       </div>
 
-      {formData.applicationMethod === "Email" && (
-        <input
-          name="contactEmail"
-          placeholder="Contact email"
-          value={formData.contactEmail}
-          onChange={onChange}
-        />
-      )}
-
-      {formData.applicationMethod === "External Link" && (
-        <input
-          name="applicationURL"
-          placeholder="Application URL"
-          value={formData.applicationURL}
-          onChange={onChange}
-        />
-      )}
+      <input
+        name="contactEmail"
+        placeholder="Contact email"
+        value={formData.contactEmail}
+        onChange={onChange}
+      />
 
       <div className="job-button-wrap">
         <button type="submit" className="primary-button">

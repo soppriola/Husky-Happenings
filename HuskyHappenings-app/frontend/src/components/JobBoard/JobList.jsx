@@ -24,6 +24,14 @@ function formatDateTime(value) {
   return `${month}/${day}/${year}, ${hour}:${minute} ${ampm}`;
 }
 
+function canManage(job) {
+  return job.canManage === 1 || job.canManage === true || job.canManage === "1";
+}
+
+function isClosed(job) {
+  return String(job.status).toLowerCase() === "closed";
+}
+
 export default function JobList({
   jobs,
   onEdit,
@@ -31,6 +39,7 @@ export default function JobList({
   onDelete,
   onApply,
   onUpdateApplicationStatus,
+  onDeleteApplication,
 }) {
   const [activeApplyJobId, setActiveApplyJobId] = useState(null);
 
@@ -53,70 +62,135 @@ export default function JobList({
 
   return (
     <div className="job-card-grid">
-      {jobs.map((job) => (
-        <div className="job-card" key={job.id}>
-          <div className="job-card-top">
-            <div>
-              <h3>{job.title}</h3>
-              <p className="job-company">{job.company}</p>
+      {jobs.map((job) => {
+        const closed = isClosed(job);
+
+        return (
+          <div className={`job-card ${closed ? "closed-job-card" : ""}`} key={job.id}>
+            <div className="job-card-top">
+              <div>
+                <h3>{job.title}</h3>
+                <p className="job-company">{job.company}</p>
+              </div>
+              <span className="job-badge">{job.status}</span>
             </div>
-            <span className="job-badge">{job.status}</span>
+
+            <p className="job-description">
+              {job.description || "No description provided."}
+            </p>
+
+            <div className="job-meta">
+              <p><strong>Location:</strong> {job.location}</p>
+              <p><strong>Method:</strong> Email</p>
+              {job.contactEmail && <p><strong>Email:</strong> {job.contactEmail}</p>}
+              <p><strong>Deadline:</strong> {formatDateTime(job.deadline)}</p>
+            </div>
+
+            {canManage(job) && (
+              <div className="job-action-row">
+                <button type="button" onClick={() => onEdit(job)}>
+                  Edit
+                </button>
+
+                {!closed && (
+                  <button type="button" onClick={() => onClose(job.id)}>
+                    Close
+                  </button>
+                )}
+
+                <button type="button" onClick={() => onDelete(job.id)}>
+                  Delete
+                </button>
+              </div>
+            )}
+
+            {!canManage(job) && !closed && (
+              <div className="job-action-row">
+                <button type="button" onClick={() => handleOpenApply(job.id)}>
+                  Apply
+                </button>
+              </div>
+            )}
+
+            {!canManage(job) && closed && (
+              <p className="empty-state">
+                This position is closed and no longer accepting applications.
+              </p>
+            )}
+
+            {activeApplyJobId === job.id && !closed && (
+              <ApplyToJobForm
+                jobId={job.id}
+                onSubmit={handleSubmitApplication}
+                onCancel={handleCloseApply}
+              />
+            )}
+
+            {canManage(job) && (
+              <div className="job-applications-box">
+                <h4>Applications for this job</h4>
+
+                {!job.applications || job.applications.length === 0 ? (
+                  <p className="empty-state">No applications yet.</p>
+                ) : (
+                  job.applications.map((application) => (
+                    <div className="job-application-card" key={application.applicationId}>
+                      <p><strong>Applicant:</strong> {application.applicantName}</p>
+                      <p><strong>Email:</strong> {application.applicantEmail}</p>
+                      <p><strong>Status:</strong> {application.applicationStatus}</p>
+                      <p><strong>Applied:</strong> {formatDateTime(application.appliedAt)}</p>
+                      <p><strong>Cover Letter:</strong> {application.coverLetter || "N/A"}</p>
+
+                      {application.resumeURL && (
+                        <p><strong>Resume:</strong> {application.resumeURL}</p>
+                      )}
+
+                      <div className="job-action-row">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onUpdateApplicationStatus(application.applicationId, "Under Review")
+                          }
+                        >
+                          Mark Under Review
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onUpdateApplicationStatus(application.applicationId, "Accepted")
+                          }
+                        >
+                          Accept
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onUpdateApplicationStatus(application.applicationId, "Rejected")
+                          }
+                        >
+                          Decline
+                        </button>
+
+                        {(application.applicationStatus === "Rejected" ||
+                          application.applicationStatus === "Declined") && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteApplication(application.applicationId)}
+                          >
+                            Delete Application
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
-
-          <p className="job-description">
-            {job.description || "No description provided."}
-          </p>
-
-          <div className="job-meta">
-            <p><strong>Location:</strong> {job.location}</p>
-            <p><strong>Method:</strong> {job.applicationMethod}</p>
-            {job.contactEmail && <p><strong>Email:</strong> {job.contactEmail}</p>}
-            {job.applicationURL && <p><strong>Link:</strong> {job.applicationURL}</p>}
-            <p><strong>Deadline:</strong> {formatDateTime(job.deadline)}</p>
-          </div>
-
-          <div className="job-action-row">
-            <button type="button" onClick={() => onEdit(job)}>
-              Edit
-            </button>
-            <button type="button" onClick={() => onClose(job.id)}>
-              Close
-            </button>
-            <button type="button" onClick={() => onDelete(job.id)}>
-              Delete
-            </button>
-          </div>
-
-          <div className="job-action-row">
-            <button
-              type="button"
-              onClick={() => handleOpenApply(job.id)}
-            >
-              Apply
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                const applicationId = window.prompt("Enter JobApplicationID to mark Under Review:");
-                if (applicationId) {
-                  onUpdateApplicationStatus(applicationId, "Under Review");
-                }
-              }}
-            >
-              Mark Under Review
-            </button>
-          </div>
-
-          {activeApplyJobId === job.id && (
-            <ApplyToJobForm
-              jobId={job.id}
-              onSubmit={handleSubmitApplication}
-              onCancel={handleCloseApply}
-            />
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   createMentorRequest,
   updateMentorRequest,
   deleteMentorRequest,
+  fetchMyMentorshipRequests,
 } from "../../api";
 import CreateMentorship from "./CreateMentorship";
 import RequestMentor from "./RequestMentor";
@@ -27,9 +28,14 @@ const emptyRequestForm = {
   membershipStatus: "Pending",
 };
 
+function canManage(item) {
+  return item.canManage === 1 || item.canManage === true || item.canManage === "1";
+}
+
 export default function MentorshipPage() {
   const [mentorships, setMentorships] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [myRequests, setMyRequests] = useState([]);
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
 
@@ -44,13 +50,16 @@ export default function MentorshipPage() {
     try {
       const mentorshipData = await fetchMentorships();
       const requestData = await fetchMentorRequests();
+      const myRequestData = await fetchMyMentorshipRequests();
 
       setMentorships(Array.isArray(mentorshipData) ? mentorshipData : []);
       setRequests(Array.isArray(requestData) ? requestData : []);
+      setMyRequests(Array.isArray(myRequestData) ? myRequestData : []);
     } catch (error) {
       console.error("Failed to load mentorship data:", error);
       setMentorships([]);
       setRequests([]);
+      setMyRequests([]);
     }
   }
 
@@ -68,12 +77,9 @@ export default function MentorshipPage() {
     event.preventDefault();
     setMessage("");
 
-    let result;
-    if (editingId) {
-      result = await updateMentorship(editingId, programForm);
-    } else {
-      result = await createMentorship(programForm);
-    }
+    const result = editingId
+      ? await updateMentorship(editingId, programForm)
+      : await createMentorship(programForm);
 
     if (result.error) {
       setMessage(result.error);
@@ -85,16 +91,20 @@ export default function MentorshipPage() {
         ? "Mentorship program updated successfully."
         : "Mentorship program created successfully."
     );
+
     setProgramForm(emptyProgramForm);
     setEditingId(null);
-    loadData();
+    await loadData();
   }
 
   async function submitRequest(event) {
     event.preventDefault();
     setMessage("");
 
-    const result = await createMentorRequest(requestForm);
+    const result = await createMentorRequest({
+      ...requestForm,
+      membershipStatus: "Pending",
+    });
 
     if (result.error) {
       setMessage(result.error);
@@ -103,7 +113,7 @@ export default function MentorshipPage() {
 
     setMessage("Mentorship request submitted successfully.");
     setRequestForm(emptyRequestForm);
-    loadData();
+    await loadData();
   }
 
   function handleEditProgram(item) {
@@ -125,7 +135,7 @@ export default function MentorshipPage() {
       return;
     }
     setMessage("Mentorship program deactivated successfully.");
-    loadData();
+    await loadData();
   }
 
   async function handleDeleteProgram(id) {
@@ -135,7 +145,7 @@ export default function MentorshipPage() {
       return;
     }
     setMessage("Mentorship program deleted successfully.");
-    loadData();
+    await loadData();
   }
 
   async function handleUpdateRequest(groupId, userId, roleType, membershipStatus) {
@@ -152,7 +162,7 @@ export default function MentorshipPage() {
     }
 
     setMessage("Mentorship request updated successfully.");
-    loadData();
+    await loadData();
   }
 
   async function handleDeleteRequest(groupId, userId) {
@@ -167,7 +177,7 @@ export default function MentorshipPage() {
     }
 
     setMessage("Mentorship request removed successfully.");
-    loadData();
+    await loadData();
   }
 
   function handleClearEdit() {
@@ -186,21 +196,17 @@ export default function MentorshipPage() {
       <section className="mentorship-section">
         <div className="mentorship-split">
           <div className="mentorship-panel">
-            <h2>
-              {editingId ? "Edit Mentorship Program" : "Create Mentorship Program"}
-            </h2>
+            <h2>{editingId ? "Edit Mentorship Program" : "Create Mentorship Program"}</h2>
+
             <CreateMentorship
               formData={programForm}
               onChange={handleProgramChange}
               onSubmit={submitProgram}
               isEditing={!!editingId}
             />
+
             {editingId && (
-              <button
-                type="button"
-                onClick={handleClearEdit}
-                className="refresh-button"
-              >
+              <button type="button" onClick={handleClearEdit} className="refresh-button">
                 Cancel Edit
               </button>
             )}
@@ -208,11 +214,12 @@ export default function MentorshipPage() {
 
           <div className="mentorship-panel">
             <h2>Request a Mentor</h2>
+
             <RequestMentor
               formData={requestForm}
               onChange={handleRequestChange}
               onSubmit={submitRequest}
-              mentorships={mentorships}
+              mentorships={mentorships.filter((item) => !canManage(item))}
             />
           </div>
         </div>
@@ -223,58 +230,84 @@ export default function MentorshipPage() {
       <section className="mentorship-section">
         <div className="mentorship-list-header">
           <h2>Available Mentorship Programs</h2>
-          <button
-            type="button"
-            onClick={loadData}
-            className="refresh-button"
-          >
+          <button type="button" onClick={loadData} className="refresh-button">
             Refresh
           </button>
         </div>
 
         {mentorships.length === 0 ? (
-          <p className="empty-state">
-            No mentorship programs available yet.
-          </p>
+          <p className="empty-state">No mentorship programs available yet.</p>
         ) : (
           <div className="mentorship-card-grid">
             {mentorships.map((item) => (
               <div className="mentorship-card" key={item.id}>
                 <div className="mentorship-card-top">
                   <h3>{item.name}</h3>
-                  <span className="mentorship-badge">
-                    {item.privacyType}
-                  </span>
+                  <span className="mentorship-badge">{item.privacyType}</span>
                 </div>
-                <p>
-                  <strong>Focus Area:</strong> {item.focusArea}
-                </p>
-                <p>
-                  <strong>Active:</strong>{" "}
-                  {item.isActive ? "Yes" : "No"}
-                </p>
+
+                <p><strong>Focus Area:</strong> {item.focusArea}</p>
+                <p><strong>Active:</strong> {item.isActive ? "Yes" : "No"}</p>
+
                 <p className="mentorship-description">
                   {item.description || "No description provided."}
                 </p>
 
+                {canManage(item) && (
+                  <div className="event-action-row">
+                    <button type="button" onClick={() => handleEditProgram(item)}>Edit</button>
+                    <button type="button" onClick={() => handleDeactivateProgram(item.id)}>Deactivate</button>
+                    <button type="button" onClick={() => handleDeleteProgram(item.id)}>Delete</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mentorship-section">
+        <h2>Mentorship Requests For Your Programs</h2>
+
+        {requests.length === 0 ? (
+          <p className="empty-state">No mentorship requests submitted yet.</p>
+        ) : (
+          <div className="mentorship-card-grid">
+            {requests.map((item, index) => (
+              <div className="mentorship-card" key={`${item.groupId}-${item.userId}-${index}`}>
+                <div className="mentorship-card-top">
+                  <h3>{item.userName || `User ${item.userId}`}</h3>
+                  <span className="mentorship-badge">{item.membershipStatus}</span>
+                </div>
+
+                <p><strong>Program:</strong> {item.groupName || `Group ${item.groupId}`}</p>
+                <p><strong>Role Type:</strong> {item.roleType}</p>
+                <p><strong>Joined At:</strong> {item.joinedAt || "Not joined yet"}</p>
+
                 <div className="event-action-row">
                   <button
                     type="button"
-                    onClick={() => handleEditProgram(item)}
+                    onClick={() =>
+                      handleUpdateRequest(item.groupId, item.userId, item.roleType, "Accepted")
+                    }
                   >
-                    Edit
+                    Accept
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => handleDeactivateProgram(item.id)}
+                    onClick={() =>
+                      handleUpdateRequest(item.groupId, item.userId, item.roleType, "Declined")
+                    }
                   >
-                    Deactivate
+                    Decline
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => handleDeleteProgram(item.id)}
+                    onClick={() => handleDeleteRequest(item.groupId, item.userId)}
                   >
-                    Delete
+                    Remove
                   </button>
                 </div>
               </div>
@@ -284,78 +317,28 @@ export default function MentorshipPage() {
       </section>
 
       <section className="mentorship-section">
-        <h2>Mentorship Requests</h2>
+        <h2>My Mentorship Requests</h2>
 
-        {requests.length === 0 ? (
-          <p className="empty-state">
-            No mentorship requests submitted yet.
-          </p>
+        {myRequests.length === 0 ? (
+          <p className="empty-state">You have not requested any mentorship programs yet.</p>
         ) : (
           <div className="mentorship-card-grid">
-            {requests.map((item, index) => (
-              <div
-                className="mentorship-card"
-                key={`${item.groupId}-${item.userId}-${index}`}
-              >
+            {myRequests.map((item, index) => (
+              <div className="mentorship-card" key={`${item.groupId}-${index}`}>
                 <div className="mentorship-card-top">
-                  <h3>{item.userName || `User ${item.userId}`}</h3>
-                  <span className="mentorship-badge">
-                    {item.membershipStatus}
-                  </span>
+                  <h3>{item.groupName}</h3>
+                  <span className="mentorship-badge">{item.membershipStatus}</span>
                 </div>
 
-                <p>
-                  <strong>Program:</strong>{" "}
-                  {item.groupName || `Group ${item.groupId}`}
-                </p>
+                <p><strong>Requested Role:</strong> {item.roleType}</p>
+                <p><strong>Requested At:</strong> {item.joinedAt || "N/A"}</p>
 
-                <p>
-                  <strong>Role Type:</strong> {item.roleType}
-                </p>
-
-                <p>
-                  <strong>Joined At:</strong>{" "}
-                  {item.joinedAt || "Not joined yet"}
-                </p>
-
-                <div className="event-action-row">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleUpdateRequest(
-                        item.groupId,
-                        item.userId,
-                        item.roleType,
-                        "Accepted"
-                      )
-                    }
-                  >
-                    Accept
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleUpdateRequest(
-                        item.groupId,
-                        item.userId,
-                        item.roleType,
-                        "Declined"
-                      )
-                    }
-                  >
-                    Decline
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleDeleteRequest(item.groupId, item.userId)
-                    }
-                  >
-                    Remove
-                  </button>
-                </div>
+                {item.membershipStatus === "Accepted" && (
+                  <>
+                    <p><strong>Program Contact:</strong> {item.creatorName}</p>
+                    <p><strong>Email:</strong> {item.creatorEmail}</p>
+                  </>
+                )}
               </div>
             ))}
           </div>

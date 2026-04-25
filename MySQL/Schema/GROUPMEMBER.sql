@@ -6,7 +6,7 @@ CREATE TABLE GroupMember (
     GroupMemberID INT UNSIGNED NOT NULL AUTO_INCREMENT,
     GroupID INT UNSIGNED NOT NULL,
     UserID INT UNSIGNED NOT NULL,
-    RoleType ENUM('Owner', 'Moderator', 'Member') NOT NULL DEFAULT 'Member',
+    RoleType ENUM('Owner','Moderator','Member','Mentor','Mentee') NOT NULL DEFAULT 'Member',
     MembershipStatus ENUM('Invited', 'Pending', 'Accepted', 'Declined', 'Left', 'Removed')
         NOT NULL DEFAULT 'Pending',
     JoinedAt TIMESTAMP NULL,
