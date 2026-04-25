@@ -64,7 +64,7 @@ export default function EventsPage() {
 
   async function loadCurrentUser() {
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/me", {
+      const res = await fetch("https://127.0.0.1:5000/api/me", {
         credentials: "include",
       });
 
@@ -78,7 +78,7 @@ export default function EventsPage() {
 
   async function loadGroups() {
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/my-groups", {
+      const res = await fetch("https://127.0.0.1:5000/api/my-groups", {
         credentials: "include",
       });
 
