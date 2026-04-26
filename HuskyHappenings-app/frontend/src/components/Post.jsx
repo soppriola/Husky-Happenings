@@ -20,7 +20,7 @@ export default function Post({
   const loadComments = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/posts/${postId}/comments`,
+        `https://localhost:5000/api/posts/${postId}/comments`,
         { credentials: "include" }
       );
 
@@ -47,7 +47,7 @@ export default function Post({
       setLoading(true);
 
       const response = await fetch(
-        `http://localhost:5000/api/posts/${postId}/like`,
+        `https://localhost:5000/api/posts/${postId}/like`,
         {
           method: "POST",
           credentials: "include",
@@ -73,7 +73,7 @@ export default function Post({
       setShareLoading(true);
 
       const response = await fetch(
-        `http://localhost:5000/api/posts/${postId}/share`,
+        `https://localhost:5000/api/posts/${postId}/share`,
         {
           method: "POST",
           headers: {
@@ -102,7 +102,7 @@ export default function Post({
     if (!window.confirm("Are you sure you want to delete this post?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+      const response = await fetch(`https://localhost:5000/api/posts/${postId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -126,7 +126,7 @@ export default function Post({
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/posts/${postId}/comments`,
+        `https://localhost:5000/api/posts/${postId}/comments`,
         {
           method: "POST",
           headers: {

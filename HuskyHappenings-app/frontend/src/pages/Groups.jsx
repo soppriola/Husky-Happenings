@@ -118,7 +118,7 @@ export default function Groups() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/groups/${groupId}/join`,
+        `https://localhost:5000/api/groups/${groupId}/join`,
         {
           method: "POST",
           credentials: "include",
