@@ -19,9 +19,10 @@ export default function Post({
 
   const loadComments = async () => {
     try {
-      const response = await fetch(`https://localhost:5000/api/posts/${postId}/comments`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `https://localhost:5000/api/posts/${postId}/comments`,
+        { credentials: "include" }
+      );
 
       const data = await response.json();
 
@@ -45,10 +46,13 @@ export default function Post({
     try {
       setLoading(true);
 
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetch(
+        `https://localhost:5000/api/posts/${postId}/like`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       const data = await response.json();
 
@@ -68,14 +72,17 @@ export default function Post({
     try {
       setShareLoading(true);
 
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/share`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ content: "" }),
-      });
+      const response = await fetch(
+        `https://localhost:5000/api/posts/${postId}/share`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ content: "" }),
+        }
+      );
 
       const data = await response.json();
 
@@ -91,20 +98,44 @@ export default function Post({
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+
+    try {
+      const response = await fetch(`https://localhost:5000/api/posts/${postId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        onRefresh();
+      } else {
+        alert(data.error || "Failed to delete post");
+      }
+    } catch (error) {
+      alert("Network error deleting post");
+    }
+  };
+
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
 
     if (!commentText.trim()) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ content: commentText }),
-      });
+      const response = await fetch(
+        `https://localhost:5000/api/posts/${postId}/comments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ content: commentText }),
+        }
+      );
 
       const data = await response.json();
 
@@ -167,17 +198,29 @@ export default function Post({
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "16px", marginTop: "12px", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "16px",
+          marginTop: "12px",
+          alignItems: "center",
+        }}
+      >
         <button onClick={handleLike} disabled={loading}>
           {loading ? "Liking..." : "Like"}
         </button>
+
         <span>{likeCount} likes</span>
+
         <button onClick={() => setShowComments(!showComments)}>
           {showComments ? "Hide Comments" : "Comment"}
         </button>
+
         <button onClick={handleShare} disabled={shareLoading}>
           {shareLoading ? "Sharing..." : "Share"}
         </button>
+
+        <button onClick={handleDelete}>Delete</button>
       </div>
 
       {showComments && (

@@ -3,7 +3,7 @@
 // Receives session token from backend
 
 import { useState } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, useNavigate, replace, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./Login.css";
 
@@ -18,11 +18,10 @@ export default function Login() {
 
   const redirectTo = params.get("redirect")
     ? decodeURIComponent(params.get("redirect"))
-    : "/landing";
+    : "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
     try {
       const response = await fetch("https://localhost:5000/api/login", {
@@ -37,8 +36,8 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        await login();
-        navigate(redirectTo, { replace: true });
+        login();
+        navigate(redirectTo, replace);
       } else {
         setError(data.error || "Login failed");
       }
@@ -52,9 +51,12 @@ export default function Login() {
       <section className="login-card">
         <div className="login-brand">
           <div className="login-logo">HH</div>
+
           <div>
-            <h1>Welcome back</h1>
-            <p>Log in to continue to HuskyHappenings.</p>
+            <p className="login-eyebrow">Welcome back</p>
+            <h1>Log in to HuskyHappenings</h1>
+            <p className="login-subtitle">
+            </p>
           </div>
         </div>
 
@@ -84,7 +86,7 @@ export default function Login() {
           </div>
 
           <button type="submit" className="login-btn">
-            Log In
+            Log in
           </button>
         </form>
 

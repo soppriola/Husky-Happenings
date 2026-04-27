@@ -64,7 +64,7 @@ export default function EventsPage() {
 
   async function loadCurrentUser() {
     try {
-      const res = await fetch("https://127.0.0.1:5000/api/me", {
+      const res = await fetch("https://localhost:5000/api/me", {
         credentials: "include",
       });
 
@@ -78,7 +78,7 @@ export default function EventsPage() {
 
   async function loadGroups() {
     try {
-      const res = await fetch("https://127.0.0.1:5000/api/my-groups", {
+      const res = await fetch("https://localhost:5000/api/groups/my", {
         credentials: "include",
       });
 
@@ -141,7 +141,9 @@ export default function EventsPage() {
       return;
     }
 
-    setMessage(editingId ? "Event updated successfully." : "Event created successfully.");
+    setMessage(
+      editingId ? "Event updated successfully." : "Event created successfully."
+    );
     setFormData(emptyForm);
     setEditingId(null);
     await loadEvents();

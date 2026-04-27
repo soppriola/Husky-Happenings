@@ -1,4 +1,195 @@
 .messages-page {
-    display: flex;
-    height: 100%;
+  min-height: 100vh;
+  padding: 36px;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 32%),
+    linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.messages-shell {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.messages-header {
+  margin-bottom: 24px;
+}
+
+.messages-eyebrow {
+  margin: 0 0 8px;
+  color: #2563eb;
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.messages-header h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-weight: 900;
+}
+
+.messages-header p:last-child {
+  max-width: 620px;
+  margin: 14px 0 0;
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.messages-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  min-height: 650px;
+  border-radius: 30px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.messages-sidebar-panel {
+  min-width: 0;
+  background: #f8fafc;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+}
+
+.messages-chat-panel {
+  min-width: 0;
+  background: white;
+  overflow: hidden;
+}
+
+.messages-status-card {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 34px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  color: #64748b;
+  text-align: center;
+  font-weight: 800;
+}
+
+.messages-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+/* Styling hooks for ConversationList if it uses simple elements */
+.messages-sidebar-panel h2,
+.messages-sidebar-panel h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.messages-sidebar-panel button {
+  border-radius: 14px;
+  border: none;
+  font-family: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.messages-sidebar-panel input {
+  width: 100%;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: white;
+  color: #0f172a;
+  font-size: 0.94rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.messages-sidebar-panel input::placeholder {
+  font-style: italic;
+  color: #94a3b8;
+}
+
+.messages-sidebar-panel input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* Styling hooks for ChatPanel if it uses simple elements */
+.messages-chat-panel input,
+.messages-chat-panel textarea {
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: white;
+  color: #0f172a;
+  font-size: 0.94rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.messages-chat-panel input:focus,
+.messages-chat-panel textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.messages-chat-panel button {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #003057, #1d4ed8);
+  color: white;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.2);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.messages-chat-panel button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.26);
+}
+
+.messages-chat-panel button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .messages-page {
+    padding: 22px;
+  }
+
+  .messages-layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .messages-sidebar-panel {
+    max-height: 280px;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .messages-chat-panel {
+    min-height: 480px;
+  }
 }

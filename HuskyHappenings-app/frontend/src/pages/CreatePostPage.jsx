@@ -11,7 +11,7 @@ export default function CreatePostPage() {
   useEffect(() => {
     const loadGroups = async () => {
       try {
-        const response = await fetch("https://localhost:5000/api/my-groups", {
+        const response = await fetch("https://localhost:5000/api/groups/my", {
           credentials: "include",
         });
 
@@ -54,7 +54,7 @@ export default function CreatePostPage() {
       const data = await response.json();
 
       if (response.ok) {
-        navigate("/landing");
+        navigate("/");
       } else {
         setError(data.error || "Failed to create post");
       }
