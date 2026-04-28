@@ -23,7 +23,7 @@ const emptyProgramForm = {
 };
 
 const emptyRequestForm = {
-  groupID: "",
+  programID: "",
   roleType: "Member",
   membershipStatus: "Pending",
 };
@@ -102,7 +102,8 @@ export default function MentorshipPage() {
     setMessage("");
 
     const result = await createMentorRequest({
-      ...requestForm,
+      programID: requestForm.programID,
+      roleType: requestForm.roleType,
       membershipStatus: "Pending",
     });
 
@@ -134,6 +135,7 @@ export default function MentorshipPage() {
       setMessage(result.error);
       return;
     }
+
     setMessage("Mentorship program deactivated successfully.");
     await loadData();
   }
@@ -144,13 +146,14 @@ export default function MentorshipPage() {
       setMessage(result.error);
       return;
     }
+
     setMessage("Mentorship program deleted successfully.");
     await loadData();
   }
 
-  async function handleUpdateRequest(groupId, userId, roleType, membershipStatus) {
+  async function handleUpdateRequest(programId, userId, roleType, membershipStatus) {
     const result = await updateMentorRequest({
-      groupID: groupId,
+      programID: programId,
       userID: userId,
       roleType,
       membershipStatus,
@@ -165,9 +168,9 @@ export default function MentorshipPage() {
     await loadData();
   }
 
-  async function handleDeleteRequest(groupId, userId) {
+  async function handleDeleteRequest(programId, userId) {
     const result = await deleteMentorRequest({
-      groupID: groupId,
+      programID: programId,
       userID: userId,
     });
 
@@ -274,13 +277,13 @@ export default function MentorshipPage() {
         ) : (
           <div className="mentorship-card-grid">
             {requests.map((item, index) => (
-              <div className="mentorship-card" key={`${item.groupId}-${item.userId}-${index}`}>
+              <div className="mentorship-card" key={`${item.programId}-${item.userId}-${index}`}>
                 <div className="mentorship-card-top">
                   <h3>{item.userName || `User ${item.userId}`}</h3>
                   <span className="mentorship-badge">{item.membershipStatus}</span>
                 </div>
 
-                <p><strong>Program:</strong> {item.groupName || `Group ${item.groupId}`}</p>
+                <p><strong>Program:</strong> {item.programName || `Program ${item.programId}`}</p>
                 <p><strong>Role Type:</strong> {item.roleType}</p>
                 <p><strong>Joined At:</strong> {item.joinedAt || "Not joined yet"}</p>
 
@@ -288,7 +291,7 @@ export default function MentorshipPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      handleUpdateRequest(item.groupId, item.userId, item.roleType, "Accepted")
+                      handleUpdateRequest(item.programId, item.userId, item.roleType, "Accepted")
                     }
                   >
                     Accept
@@ -297,7 +300,7 @@ export default function MentorshipPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      handleUpdateRequest(item.groupId, item.userId, item.roleType, "Declined")
+                      handleUpdateRequest(item.programId, item.userId, item.roleType, "Declined")
                     }
                   >
                     Decline
@@ -305,7 +308,7 @@ export default function MentorshipPage() {
 
                   <button
                     type="button"
-                    onClick={() => handleDeleteRequest(item.groupId, item.userId)}
+                    onClick={() => handleDeleteRequest(item.programId, item.userId)}
                   >
                     Remove
                   </button>
@@ -324,9 +327,9 @@ export default function MentorshipPage() {
         ) : (
           <div className="mentorship-card-grid">
             {myRequests.map((item, index) => (
-              <div className="mentorship-card" key={`${item.groupId}-${index}`}>
+              <div className="mentorship-card" key={`${item.programId}-${index}`}>
                 <div className="mentorship-card-top">
-                  <h3>{item.groupName}</h3>
+                  <h3>{item.programName}</h3>
                   <span className="mentorship-badge">{item.membershipStatus}</span>
                 </div>
 
