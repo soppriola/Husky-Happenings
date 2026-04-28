@@ -1,3 +1,5 @@
+// Author: Arianna Kelsey
+
 import React, { useState } from "react";
 import ApplyToJobForm from "./ApplyToJobForm";
 
