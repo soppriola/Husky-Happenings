@@ -1,127 +1,160 @@
-USE HuskyHappenings;
+-- Author: Arianna Kelsey
 
-DROP PROCEDURE IF EXISTS CreateGroup;
-DROP PROCEDURE IF EXISTS UpdateGroup;
-DROP PROCEDURE IF EXISTS DeactivateGroup;
-DROP PROCEDURE IF EXISTS DeleteGroup;
-DROP PROCEDURE IF EXISTS AddGroupMember;
-DROP PROCEDURE IF EXISTS UpdateGroupMemberStatus;
-DROP PROCEDURE IF EXISTS RemoveGroupMember;
+USE HUSKYHAPPENINGS;
 
 DELIMITER $$
 
-CREATE PROCEDURE CreateGroup(
-    IN p_CreatedByUserID INT UNSIGNED,
-    IN p_GroupName VARCHAR(100),
-    IN p_StudyCategory VARCHAR(100),
-    IN p_Description TEXT,
-    IN p_PrivacyType VARCHAR(20)
+DROP PROCEDURE IF EXISTS CreateMentorshipProgram $$
+CREATE PROCEDURE CreateMentorshipProgram(
+    IN p_userID INT,
+    IN p_name VARCHAR(255),
+    IN p_focusArea VARCHAR(255),
+    IN p_description TEXT,
+    IN p_privacyType VARCHAR(50)
 )
 BEGIN
-    INSERT INTO HGroup (
+    INSERT INTO MentorshipProgram (
         CreatedByUserID,
-        GroupName,
-        StudyCategory,
+        Name,
+        FocusArea,
         Description,
         PrivacyType
     )
     VALUES (
-        p_CreatedByUserID,
-        p_GroupName,
-        p_StudyCategory,
-        p_Description,
-        p_PrivacyType
+        p_userID,
+        p_name,
+        p_focusArea,
+        p_description,
+        p_privacyType
     );
 END $$
 
-CREATE PROCEDURE UpdateGroup(
-    IN p_GroupID INT UNSIGNED,
-    IN p_GroupName VARCHAR(100),
-    IN p_StudyCategory VARCHAR(100),
-    IN p_Description TEXT,
-    IN p_PrivacyType VARCHAR(20),
-    IN p_IsActive BOOLEAN
+DROP PROCEDURE IF EXISTS CreateMentorshipProgram $$
+CREATE PROCEDURE CreateMentorshipProgram(
+    IN p_userID INT UNSIGNED,
+    IN p_name VARCHAR(255),
+    IN p_focusArea VARCHAR(255),
+    IN p_description TEXT,
+    IN p_privacyType VARCHAR(50)
 )
 BEGIN
-    UPDATE HGroup
-    SET GroupName = p_GroupName,
-        StudyCategory = p_StudyCategory,
-        Description = p_Description,
-        PrivacyType = p_PrivacyType,
-        IsActive = p_IsActive
-    WHERE GroupID = p_GroupID;
+    INSERT INTO MentorshipProgram (
+        CreatedByUserID,
+        Name,
+        FocusArea,
+        Description,
+        PrivacyType
+    )
+    VALUES (
+        p_userID,
+        p_name,
+        p_focusArea,
+        p_description,
+        p_privacyType
+    );
 END $$
 
-CREATE PROCEDURE DeactivateGroup(
-    IN p_GroupID INT UNSIGNED
+
+DROP PROCEDURE IF EXISTS UpdateMentorshipProgram $$
+CREATE PROCEDURE UpdateMentorshipProgram(
+    IN p_programID INT,
+    IN p_name VARCHAR(255),
+    IN p_focusArea VARCHAR(255),
+    IN p_description TEXT,
+    IN p_privacyType VARCHAR(50),
+    IN p_isActive BOOLEAN
 )
 BEGIN
-    UPDATE HGroup
+    UPDATE MentorshipProgram
+    SET
+        Name = p_name,
+        FocusArea = p_focusArea,
+        Description = p_description,
+        PrivacyType = p_privacyType,
+        IsActive = p_isActive
+    WHERE ProgramID = p_programID;
+END $$
+
+
+DROP PROCEDURE IF EXISTS DeactivateMentorshipProgram $$
+CREATE PROCEDURE DeactivateMentorshipProgram(
+    IN p_programID INT
+)
+BEGIN
+    UPDATE MentorshipProgram
     SET IsActive = FALSE
-    WHERE GroupID = p_GroupID;
+    WHERE ProgramID = p_programID;
 END $$
 
-CREATE PROCEDURE DeleteGroup(
-    IN p_GroupID INT UNSIGNED
+
+DROP PROCEDURE IF EXISTS DeleteMentorshipProgram $$
+CREATE PROCEDURE DeleteMentorshipProgram(
+    IN p_programID INT
 )
 BEGIN
-    DELETE FROM HGroup
-    WHERE GroupID = p_GroupID;
+    DELETE FROM MentorshipProgram
+    WHERE ProgramID = p_programID;
 END $$
 
-CREATE PROCEDURE AddGroupMember(
-    IN p_GroupID INT UNSIGNED,
-    IN p_UserID INT UNSIGNED,
-    IN p_RoleType VARCHAR(20),
-    IN p_MembershipStatus VARCHAR(20)
+
+DROP PROCEDURE IF EXISTS AddMentorshipMember $$
+CREATE PROCEDURE AddMentorshipMember(
+    IN p_programID INT,
+    IN p_userID INT UNSIGNED,
+    IN p_roleType VARCHAR(50),
+    IN p_membershipStatus VARCHAR(50)
 )
 BEGIN
-    INSERT INTO GroupMember (
-        GroupID,
+    INSERT INTO MentorshipProgramMember (
+        ProgramID,
         UserID,
         RoleType,
         MembershipStatus,
         JoinedAt
     )
     VALUES (
-        p_GroupID,
-        p_UserID,
-        p_RoleType,
-        p_MembershipStatus,
+        p_programID,
+        p_userID,
+        p_roleType,
+        p_membershipStatus,
         CASE
-            WHEN p_MembershipStatus = 'Accepted' THEN CURRENT_TIMESTAMP
+            WHEN p_membershipStatus = 'Accepted' THEN NOW()
             ELSE NULL
         END
     );
 END $$
 
-CREATE PROCEDURE UpdateGroupMemberStatus(
-    IN p_GroupID INT UNSIGNED,
-    IN p_UserID INT UNSIGNED,
-    IN p_RoleType VARCHAR(20),
-    IN p_MembershipStatus VARCHAR(20)
+
+DROP PROCEDURE IF EXISTS UpdateMentorshipMemberStatus $$
+CREATE PROCEDURE UpdateMentorshipMemberStatus(
+    IN p_programID INT,
+    IN p_userID INT UNSIGNED,
+    IN p_roleType VARCHAR(50),
+    IN p_membershipStatus VARCHAR(50)
 )
 BEGIN
-    UPDATE GroupMember
-    SET RoleType = p_RoleType,
-        MembershipStatus = p_MembershipStatus,
+    UPDATE MentorshipProgramMember
+    SET
+        RoleType = p_roleType,
+        MembershipStatus = p_membershipStatus,
         JoinedAt = CASE
-            WHEN p_MembershipStatus = 'Accepted' AND JoinedAt IS NULL THEN CURRENT_TIMESTAMP
-            WHEN p_MembershipStatus <> 'Accepted' THEN NULL
+            WHEN p_membershipStatus = 'Accepted' THEN NOW()
             ELSE JoinedAt
         END
-    WHERE GroupID = p_GroupID
-      AND UserID = p_UserID;
+    WHERE ProgramID = p_programID
+      AND UserID = p_userID;
 END $$
 
-CREATE PROCEDURE RemoveGroupMember(
-    IN p_GroupID INT UNSIGNED,
-    IN p_UserID INT UNSIGNED
+
+DROP PROCEDURE IF EXISTS RemoveMentorshipMember $$
+CREATE PROCEDURE RemoveMentorshipMember(
+    IN p_programID INT,
+    IN p_userID INT UNSIGNED
 )
 BEGIN
-    DELETE FROM GroupMember
-    WHERE GroupID = p_GroupID
-      AND UserID = p_UserID;
+    DELETE FROM MentorshipProgramMember
+    WHERE ProgramID = p_programID
+      AND UserID = p_userID;
 END $$
 
 DELIMITER ;

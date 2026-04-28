@@ -1,3 +1,5 @@
+-- Author: Arianna Kelsey
+
 USE HuskyHappenings;
 
 DROP TABLE IF EXISTS Event;

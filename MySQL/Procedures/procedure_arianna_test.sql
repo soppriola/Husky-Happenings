@@ -1,9 +1,8 @@
+-- Author: Arianna Kelsey
+
 USE HuskyHappenings;
 
--- Make sure these users exist first:
--- USER_ID 1 = ariannak147
--- USER_ID 2 = studentuser2
--- USER_ID 3 = studentuser3
+-- Make sure three users exist first
 
 SELECT USER_ID, USERNAME, EMAIL, NAME
 FROM USERS;

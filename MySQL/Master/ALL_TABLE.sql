@@ -469,3 +469,39 @@ CREATE TABLE IF NOT EXISTS COMMENTS (
         ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS MentorshipProgram (
+    ProgramID INT AUTO_INCREMENT PRIMARY KEY,
+    CreatedByUserID INT UNSIGNED NOT NULL,
+
+    Name VARCHAR(255) NOT NULL,
+    FocusArea VARCHAR(255) NOT NULL,
+    Description TEXT,
+    PrivacyType ENUM('Public', 'Private') DEFAULT 'Public',
+    IsActive BOOLEAN DEFAULT TRUE,
+
+    CONSTRAINT FK_MENTORSHIP_PROGRAM_USER
+        FOREIGN KEY (CreatedByUserID)
+        REFERENCES USERS(USER_ID)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS MentorshipProgramMember (
+    ProgramID INT NOT NULL,
+    UserID INT UNSIGNED NOT NULL,
+    RoleType ENUM('Member', 'Mentor') NOT NULL DEFAULT 'Member',
+    MembershipStatus ENUM('Pending', 'Accepted', 'Declined') NOT NULL DEFAULT 'Pending',
+    JoinedAt DATETIME NULL,
+
+    PRIMARY KEY (ProgramID, UserID),
+
+    CONSTRAINT FK_MENTORSHIP_MEMBER_PROGRAM
+        FOREIGN KEY (ProgramID)
+        REFERENCES MentorshipProgram(ProgramID)
+        ON DELETE CASCADE,
+
+    CONSTRAINT FK_MENTORSHIP_MEMBER_USER
+        FOREIGN KEY (UserID)
+        REFERENCES USERS(USER_ID)
+        ON DELETE CASCADE
+);
+

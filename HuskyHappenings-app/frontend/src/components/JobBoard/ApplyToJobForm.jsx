@@ -1,3 +1,5 @@
+// Author: Arianna Kelsey
+
 import React, { useState } from "react";
 
 export default function ApplyToJobForm({ jobId, onSubmit, onCancel }) {

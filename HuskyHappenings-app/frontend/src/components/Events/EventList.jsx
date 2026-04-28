@@ -1,3 +1,5 @@
+// Author: Arianna Kelsey
+
 import React from "react";
 
 function formatDateTime(value) {

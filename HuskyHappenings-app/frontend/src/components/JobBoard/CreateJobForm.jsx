@@ -1,3 +1,5 @@
+// Author: Arianna Kelsey
+
 import React from "react";
 
 export default function CreateJobForm({ formData, onChange, onSubmit }) {

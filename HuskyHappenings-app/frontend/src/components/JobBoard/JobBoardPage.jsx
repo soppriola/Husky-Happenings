@@ -1,3 +1,5 @@
+// Author: Arianna Kelsey
+
 import React, { useEffect, useState } from "react";
 import {
   fetchJobs,
