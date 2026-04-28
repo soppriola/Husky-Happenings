@@ -1,3 +1,5 @@
+-- Author: Arianna Kelsey
+
 USE HuskyHappenings;
 
 DROP PROCEDURE IF EXISTS CreateEvent;
