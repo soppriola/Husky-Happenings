@@ -156,12 +156,12 @@ export async function fetchMentorships() {
   return response.json();
 }
 // Author: Arianna Kelsey
-export async function createMentorship(formData) {
-  const response = await fetch("https://localhost:5000/api/mentorships", {
+export async function createMentorship(data) {
+  const response = await fetch("http://localhost:5000/api/mentorships", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify(formData),
+    body: JSON.stringify(data),
   });
   return response.json();
 }
