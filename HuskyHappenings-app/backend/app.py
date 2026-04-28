@@ -1529,78 +1529,82 @@ def delete_job_application(application_id):
 
 # =========================================================
 # ARIANNA: MENTORSHIP FEATURE
-# Database-backed using HGroup / GroupMember
+# Database-backed using MentorshipProgram / MentorshipProgramMember
 # =========================================================
-
-# Checks if indiviual is group owner
+# Checks if the user is the owner of an entity
 # Author: Arianna Kelsey
-def is_group_owner(group_id, user_id):
+def is_program_owner(program_id, user_id):
     cursor.execute("""
         SELECT CreatedByUserID
-        FROM HGroup
-        WHERE GroupID = %s
-    """, (group_id,))
+        FROM MentorshipProgram
+        WHERE ProgramID = %s
+    """, (program_id,))
 
-    group = cursor.fetchone()
+    program = cursor.fetchone()
 
-    if not group:
+    if not program:
         return False
 
-    return str(group["CreatedByUserID"]) == str(user_id)
+    return str(program["CreatedByUserID"]) == str(user_id)
 
-# Returns available mentorships
+# Returns mentorships
 # Author: Arianna Kelsey
 @app.get("/api/mentorships")
 @login_required
 def get_mentorships():
     cursor.execute("""
         SELECT
-            hg.GroupID AS id,
-            hg.CreatedByUserID AS createdBy,
-            (hg.CreatedByUserID = %s) AS canManage,
-            hg.GroupName AS name,
-            hg.StudyCategory AS focusArea,
-            hg.Description AS description,
-            hg.PrivacyType AS privacyType,
-            hg.IsActive AS isActive
-        FROM HGroup hg
+            mp.ProgramID AS id,
+            mp.CreatedByUserID AS createdBy,
+            (mp.CreatedByUserID = %s) AS canManage,
+            mp.Name AS name,
+            mp.FocusArea AS focusArea,
+            mp.Description AS description,
+            mp.PrivacyType AS privacyType,
+            mp.IsActive AS isActive
+        FROM MentorshipProgram mp
         WHERE
-            hg.PrivacyType = 'Public'
-            OR hg.CreatedByUserID = %s
-            OR hg.GroupID IN (
-                SELECT GroupID
-                FROM GroupMember
-                WHERE UserID = %s
-                  AND MembershipStatus = 'Accepted'
+            mp.IsActive = TRUE
+            AND (
+                mp.PrivacyType = 'Public'
+                OR mp.CreatedByUserID = %s
+                OR mp.ProgramID IN (
+                    SELECT ProgramID
+                    FROM MentorshipProgramMember
+                    WHERE UserID = %s
+                      AND MembershipStatus = 'Accepted'
+                )
             )
-        ORDER BY hg.GroupID ASC
+        ORDER BY mp.ProgramID ASC
     """, (g.user_id, g.user_id, g.user_id))
 
     return jsonify(cursor.fetchall()), 200
 
-# Gets requests for mentorships
+# Returns requests for mentorship
 # Author: Arianna Kelsey
 @app.get("/api/my-mentorship-requests")
 @login_required
 def get_my_requests():
     cursor.execute("""
         SELECT
-            gm.GroupID AS groupId,
-            hg.GroupName AS groupName,
-            gm.RoleType AS roleType,
-            gm.MembershipStatus AS membershipStatus,
-            CAST(gm.JoinedAt AS CHAR) AS joinedAt,
+            mpm.ProgramID AS programId,
+            mp.Name AS programName,
+            mpm.RoleType AS roleType,
+            mpm.MembershipStatus AS membershipStatus,
+            CAST(mpm.JoinedAt AS CHAR) AS joinedAt,
             u.NAME AS creatorName,
             u.EMAIL AS creatorEmail
-        FROM GroupMember gm
-        JOIN HGroup hg ON gm.GroupID = hg.GroupID
-        JOIN USERS u ON hg.CreatedByUserID = u.USER_ID
-        WHERE gm.UserID = %s
+        FROM MentorshipProgramMember mpm
+        JOIN MentorshipProgram mp
+            ON mpm.ProgramID = mp.ProgramID
+        JOIN USERS u
+            ON mp.CreatedByUserID = u.USER_ID
+        WHERE mpm.UserID = %s
     """, (g.user_id,))
 
     return jsonify(cursor.fetchall()), 200
 
-# Create a mentorship program posting 
+# Creates a mentorship
 # Author: Arianna Kelsey
 @app.post("/api/mentorships")
 @login_required
@@ -1623,17 +1627,17 @@ def create_mentorship():
         privacyType
     )
 
-    cursor.callproc("CreateGroup", parameters)
+    cursor.callproc("CreateMentorshipProgram", parameters)
     db.commit()
 
     return jsonify({"message": "Mentorship program created successfully"}), 201
 
-# Update mentorship
-# Author: Arianna Kelsey
-@app.put("/api/mentorships/<int:group_id>")
+# Updates mentorship
+# Arianna Kelsey
+@app.put("/api/mentorships/<int:program_id>")
 @login_required
-def update_mentorship(group_id):
-    if not is_group_owner(group_id, g.user_id):
+def update_mentorship(program_id):
+    if not is_program_owner(program_id, g.user_id):
         return jsonify({"error": "Only the creator can modify this mentorship program."}), 403
 
     data = request.get_json()
@@ -1648,7 +1652,7 @@ def update_mentorship(group_id):
         return jsonify({"error": "Missing required mentorship fields."}), 400
 
     parameters = (
-        group_id,
+        program_id,
         name,
         focusArea,
         description,
@@ -1656,90 +1660,90 @@ def update_mentorship(group_id):
         isActive
     )
 
-    cursor.callproc("UpdateGroup", parameters)
+    cursor.callproc("UpdateMentorshipProgram", parameters)
     db.commit()
 
     return jsonify({"message": "Mentorship program updated successfully"}), 200
 
-# Deactivate Mentorship posting
+# Deactivates a mentorship
 # Author: Arianna Kelsey
-@app.put("/api/mentorships/<int:group_id>/deactivate")
+@app.put("/api/mentorships/<int:program_id>/deactivate")
 @login_required
-def deactivate_mentorship(group_id):
-    if not is_group_owner(group_id, g.user_id):
+def deactivate_mentorship(program_id):
+    if not is_program_owner(program_id, g.user_id):
         return jsonify({"error": "Only the creator can modify this mentorship program."}), 403
 
-    cursor.callproc("DeactivateGroup", (group_id,))
+    cursor.callproc("DeactivateMentorshipProgram", (program_id,))
     db.commit()
 
     return jsonify({"message": "Mentorship program deactivated successfully"}), 200
 
-# Delete mentorship program
-# Arianna Kelsey
-@app.delete("/api/mentorships/<int:group_id>")
+# Deletes a mentorship
+# Author: Arianna Kelsey
+@app.delete("/api/mentorships/<int:program_id>")
 @login_required
-def delete_mentorship(group_id):
-    if not is_group_owner(group_id, g.user_id):
+def delete_mentorship(program_id):
+    if not is_program_owner(program_id, g.user_id):
         return jsonify({"error": "Only the creator can modify this mentorship program."}), 403
 
-    cursor.callproc("DeleteGroup", (group_id,))
+    cursor.callproc("DeleteMentorshipProgram", (program_id,))
     db.commit()
 
     return jsonify({"message": "Mentorship program deleted successfully"}), 200
 
-# Returns the requests for a mentor from a program
+# Returns mentor requests from a mentorship
 # Author: Arianna Kelsey
 @app.get("/api/mentorship-requests")
 @login_required
 def get_mentor_requests():
     cursor.execute("""
         SELECT
-            gm.GroupID AS groupId,
-            gm.UserID AS userId,
+            mpm.ProgramID AS programId,
+            mpm.UserID AS userId,
             u.NAME AS userName,
-            hg.GroupName AS groupName,
-            gm.RoleType AS roleType,
-            gm.MembershipStatus AS membershipStatus,
-            CAST(gm.JoinedAt AS CHAR) AS joinedAt
-        FROM GroupMember gm
+            mp.Name AS programName,
+            mpm.RoleType AS roleType,
+            mpm.MembershipStatus AS membershipStatus,
+            CAST(mpm.JoinedAt AS CHAR) AS joinedAt
+        FROM MentorshipProgramMember mpm
         JOIN USERS u
-            ON gm.UserID = u.USER_ID
-        JOIN HGroup hg
-            ON gm.GroupID = hg.GroupID
-        WHERE hg.CreatedByUserID = %s
-          AND gm.UserID != %s
-        ORDER BY gm.GroupID ASC, gm.UserID ASC
+            ON mpm.UserID = u.USER_ID
+        JOIN MentorshipProgram mp
+            ON mpm.ProgramID = mp.ProgramID
+        WHERE mp.CreatedByUserID = %s
+          AND mpm.UserID != %s
+        ORDER BY mpm.ProgramID ASC, mpm.UserID ASC
     """, (g.user_id, g.user_id))
 
     requests_data = cursor.fetchall()
     return jsonify(requests_data), 200
 
-# Create a mentor request
+# Creates a mentor request for a specific mentorship program
 # Author: Arianna Kelsey
 @app.post("/api/mentorship-requests")
 @login_required
 def create_mentor_request():
     data = request.get_json()
 
-    groupID = data.get("groupID")
+    programID = data.get("programID")
     roleType = data.get("roleType", "Member")
     membershipStatus = "Pending"
 
-    if not groupID:
-        return jsonify({"error": "Missing groupID for mentorship request."}), 400
+    if not programID:
+        return jsonify({"error": "Missing programID for mentorship request."}), 400
 
-    if is_group_owner(groupID, g.user_id):
+    if is_program_owner(programID, g.user_id):
         return jsonify({"error": "You cannot request your own mentorship program."}), 400
 
     try:
         parameters = (
-            int(groupID),
+            int(programID),
             g.user_id,
             roleType,
             membershipStatus
         )
 
-        cursor.callproc("AddGroupMember", parameters)
+        cursor.callproc("AddMentorshipMember", parameters)
         db.commit()
 
     except mysql.connector.Error as err:
@@ -1749,58 +1753,58 @@ def create_mentor_request():
 
     return jsonify({"message": "Mentorship request submitted successfully"}), 201
 
-# Update mentor requests
+# Updates mentor requests
 # Author: Arianna Kelsey
 @app.put("/api/mentorship-requests")
 @login_required
 def update_mentor_request():
     data = request.get_json()
 
-    groupID = data.get("groupID")
+    programID = data.get("programID")
     userID = data.get("userID")
     roleType = data.get("roleType", "Member")
     membershipStatus = data.get("membershipStatus")
 
-    if not groupID or not userID or not membershipStatus:
+    if not programID or not userID or not membershipStatus:
         return jsonify({"error": "Missing required mentorship request fields."}), 400
 
-    if not is_group_owner(groupID, g.user_id):
+    if not is_program_owner(programID, g.user_id):
         return jsonify({"error": "Only the program creator can accept requests."}), 403
 
     parameters = (
-        int(groupID),
+        int(programID),
         int(userID),
         roleType,
         membershipStatus
     )
 
-    cursor.callproc("UpdateGroupMemberStatus", parameters)
+    cursor.callproc("UpdateMentorshipMemberStatus", parameters)
     db.commit()
 
     return jsonify({"message": "Mentorship request updated successfully"}), 200
 
-# Remove a mentorship request
+# Remove mentor requests
 # Author: Arianna Kelsey
 @app.delete("/api/mentorship-requests")
 @login_required
 def remove_mentor_request():
     data = request.get_json()
 
-    groupID = data.get("groupID")
+    programID = data.get("programID")
     userID = data.get("userID")
 
-    if not groupID or not userID:
-        return jsonify({"error": "Missing groupID or userID."}), 400
+    if not programID or not userID:
+        return jsonify({"error": "Missing programID or userID."}), 400
 
-    if not is_group_owner(groupID, g.user_id):
+    if not is_program_owner(programID, g.user_id):
         return jsonify({"error": "Only the program creator can remove requests."}), 403
 
     parameters = (
-        int(groupID),
+        int(programID),
         int(userID)
     )
 
-    cursor.callproc("RemoveGroupMember", parameters)
+    cursor.callproc("RemoveMentorshipMember", parameters)
     db.commit()
 
     return jsonify({"message": "Mentorship request removed successfully"}), 200
