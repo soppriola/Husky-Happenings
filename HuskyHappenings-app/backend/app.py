@@ -1,3 +1,13 @@
+"""
+Husky Happenings Backend API
+Author: Arianna Kelsey, Ashley Pike, and Sophia Priola
+File: app.py
+
+Description:
+    This file contains the Flask backend for the Husky Happenings web application.
+    It defines the API routes used by the React frontend and handles communication
+    with the MySQL database.
+"""
 from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from datetime import datetime, timedelta, timezone
