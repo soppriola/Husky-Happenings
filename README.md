@@ -1,6 +1,6 @@
 # Husky Happenings
 
-Husky Happenings is a student-focused web application designed to help users connect with campus events, groups, posts, messages, and notifications. The application includes a React frontend, a Flask backend, and a MySQL database.
+Husky Happenings is a student-focused web application designed to help users connect with campus events, jobs, groups, posts, messages, and notifications. The application includes a React frontend, a Flask backend, and a MySQL database.
 
 ---
 
